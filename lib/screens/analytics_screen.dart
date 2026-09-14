@@ -172,6 +172,8 @@ class AnalyticsScreen extends ConsumerWidget {
                               children: const [
                                 TaskCompletionChartCard(),
                                 SizedBox(height: 16),
+                                FocusTrendChartCard(),
+                                SizedBox(height: 16),
                                 CategoryProductivityCard(),
                                 SizedBox(height: 16),
                                 TaskStatusChartCard(),
@@ -208,6 +210,8 @@ class AnalyticsScreen extends ConsumerWidget {
                       Column(
                         children: const [
                           TaskCompletionChartCard(),
+                          SizedBox(height: 16),
+                          FocusTrendChartCard(),
                           SizedBox(height: 16),
                           TasksCreatedVsCompletedChartCard(),
                           SizedBox(height: 16),

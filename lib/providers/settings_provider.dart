@@ -26,6 +26,17 @@ class AppSettings {
   final bool subscriptionAlertsEnabled;
   final bool expenseRemindersEnabled;
 
+  // Focus / Pomodoro Settings
+  final int focusDurationMinutes;
+  final int shortBreakMinutes;
+  final int longBreakMinutes;
+  final int sessionsBeforeLongBreak;
+  final bool autoStartBreaks;
+  final bool autoStartFocus;
+  final double dailyFocusGoalHours;
+  final bool timerSoundEnabled;
+  final bool timerVibrationEnabled;
+
   const AppSettings({
     this.themeMode = ThemeMode.system,
     this.accentColor = 'default',
@@ -46,6 +57,15 @@ class AppSettings {
     this.budgetAlertsEnabled = true,
     this.subscriptionAlertsEnabled = true,
     this.expenseRemindersEnabled = false,
+    this.focusDurationMinutes = 25,
+    this.shortBreakMinutes = 5,
+    this.longBreakMinutes = 15,
+    this.sessionsBeforeLongBreak = 4,
+    this.autoStartBreaks = false,
+    this.autoStartFocus = false,
+    this.dailyFocusGoalHours = 2.0,
+    this.timerSoundEnabled = true,
+    this.timerVibrationEnabled = true,
   });
 
   AppSettings copyWith({
@@ -68,6 +88,15 @@ class AppSettings {
     bool? budgetAlertsEnabled,
     bool? subscriptionAlertsEnabled,
     bool? expenseRemindersEnabled,
+    int? focusDurationMinutes,
+    int? shortBreakMinutes,
+    int? longBreakMinutes,
+    int? sessionsBeforeLongBreak,
+    bool? autoStartBreaks,
+    bool? autoStartFocus,
+    double? dailyFocusGoalHours,
+    bool? timerSoundEnabled,
+    bool? timerVibrationEnabled,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -93,6 +122,17 @@ class AppSettings {
           subscriptionAlertsEnabled ?? this.subscriptionAlertsEnabled,
       expenseRemindersEnabled:
           expenseRemindersEnabled ?? this.expenseRemindersEnabled,
+      focusDurationMinutes: focusDurationMinutes ?? this.focusDurationMinutes,
+      shortBreakMinutes: shortBreakMinutes ?? this.shortBreakMinutes,
+      longBreakMinutes: longBreakMinutes ?? this.longBreakMinutes,
+      sessionsBeforeLongBreak:
+          sessionsBeforeLongBreak ?? this.sessionsBeforeLongBreak,
+      autoStartBreaks: autoStartBreaks ?? this.autoStartBreaks,
+      autoStartFocus: autoStartFocus ?? this.autoStartFocus,
+      dailyFocusGoalHours: dailyFocusGoalHours ?? this.dailyFocusGoalHours,
+      timerSoundEnabled: timerSoundEnabled ?? this.timerSoundEnabled,
+      timerVibrationEnabled:
+          timerVibrationEnabled ?? this.timerVibrationEnabled,
     );
   }
 }
@@ -119,6 +159,16 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       bool parseBool(String key, bool defaultValue) {
         if (!map.containsKey(key)) return defaultValue;
         return map[key]?.toLowerCase() == 'true';
+      }
+
+      int parseInt(String key, int defaultValue) {
+        if (!map.containsKey(key)) return defaultValue;
+        return int.tryParse(map[key] ?? '') ?? defaultValue;
+      }
+
+      double parseDouble(String key, double defaultValue) {
+        if (!map.containsKey(key)) return defaultValue;
+        return double.tryParse(map[key] ?? '') ?? defaultValue;
       }
 
       TimeOfDay parseTime(String key, TimeOfDay defaultValue) {
@@ -184,6 +234,15 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
           true,
         ),
         expenseRemindersEnabled: parseBool('expense_reminders_enabled', false),
+        focusDurationMinutes: parseInt('focus_duration_minutes', 25),
+        shortBreakMinutes: parseInt('short_break_minutes', 5),
+        longBreakMinutes: parseInt('long_break_minutes', 15),
+        sessionsBeforeLongBreak: parseInt('sessions_before_long_break', 4),
+        autoStartBreaks: parseBool('auto_start_breaks', false),
+        autoStartFocus: parseBool('auto_start_focus', false),
+        dailyFocusGoalHours: parseDouble('daily_focus_goal_hours', 2.0),
+        timerSoundEnabled: parseBool('timer_sound_enabled', true),
+        timerVibrationEnabled: parseBool('timer_vibration_enabled', true),
       );
     } catch (e) {
       debugPrint('Error loading app settings: $e');
@@ -273,6 +332,42 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       await db.setSetting(
         'expense_reminders_enabled',
         newSettings.expenseRemindersEnabled.toString(),
+      );
+      await db.setSetting(
+        'focus_duration_minutes',
+        newSettings.focusDurationMinutes.toString(),
+      );
+      await db.setSetting(
+        'short_break_minutes',
+        newSettings.shortBreakMinutes.toString(),
+      );
+      await db.setSetting(
+        'long_break_minutes',
+        newSettings.longBreakMinutes.toString(),
+      );
+      await db.setSetting(
+        'sessions_before_long_break',
+        newSettings.sessionsBeforeLongBreak.toString(),
+      );
+      await db.setSetting(
+        'auto_start_breaks',
+        newSettings.autoStartBreaks.toString(),
+      );
+      await db.setSetting(
+        'auto_start_focus',
+        newSettings.autoStartFocus.toString(),
+      );
+      await db.setSetting(
+        'daily_focus_goal_hours',
+        newSettings.dailyFocusGoalHours.toString(),
+      );
+      await db.setSetting(
+        'timer_sound_enabled',
+        newSettings.timerSoundEnabled.toString(),
+      );
+      await db.setSetting(
+        'timer_vibration_enabled',
+        newSettings.timerVibrationEnabled.toString(),
       );
     } catch (e) {
       debugPrint('Error saving app settings: $e');

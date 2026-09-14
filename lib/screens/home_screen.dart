@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../database/database.dart';
 import '../providers/database_provider.dart';
 import '../providers/finance_provider.dart';
+import '../providers/focus_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/task_provider.dart';
@@ -211,11 +212,13 @@ class HomeScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 20),
 
-                          // Right Column: Finance & Analytics Summary
+                          // Right Column: Focus, Finance & Analytics Summary
                           Expanded(
                             flex: 2,
                             child: Column(
                               children: [
+                                _buildFocusSummaryCard(context, ref),
+                                const SizedBox(height: 16),
                                 _buildFinanceSummaryCard(
                                   context,
                                   financeSummaryAsync: financeSummaryAsync,
@@ -240,6 +243,8 @@ class HomeScreen extends ConsumerWidget {
                             todayProgress: todayProgress,
                           ),
                           const SizedBox(height: 20),
+                          _buildFocusSummaryCard(context, ref),
+                          const SizedBox(height: 16),
                           _buildFinanceSummaryCard(
                             context,
                             financeSummaryAsync: financeSummaryAsync,
@@ -471,6 +476,14 @@ class HomeScreen extends ConsumerWidget {
                 },
                 icon: const Icon(Icons.add_task, size: 18),
                 label: const Text('Task'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => context.go('/focus'),
+                icon: const Icon(Icons.timer_outlined, size: 18),
+                label: const Text('Focus'),
               ),
             ),
             const SizedBox(width: 8),
@@ -735,6 +748,103 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: 2),
         Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
       ],
+    );
+  }
+
+  Widget _buildFocusSummaryCard(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final totalSeconds = ref.watch(todayFocusTimeSecondsProvider);
+    final sessions = ref.watch(todayFocusSessionsProvider);
+    final settings = ref.watch(appSettingsProvider);
+    final completedSessions = sessions.where((s) => s.completed).length;
+
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final formattedTime = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
+
+    final goalHours = settings.dailyFocusGoalHours;
+    final goalSeconds = (goalHours * 3600).toInt();
+    final progress = goalSeconds > 0
+        ? (totalSeconds / goalSeconds).clamp(0.0, 1.0)
+        : 0.0;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.timer_outlined,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Today\'s Focus',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+                TextButton(
+                  onPressed: () => context.go('/focus'),
+                  child: const Text(
+                    'Start Focus',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  formattedTime,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '$completedSessions sessions completed',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 6,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Daily Goal: ${goalHours.toStringAsFixed(1)}h (${(progress * 100).toInt()}%)',
+              style: TextStyle(
+                fontSize: 11,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

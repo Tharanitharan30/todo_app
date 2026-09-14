@@ -142,6 +142,155 @@ class TaskFinanceSettingsSection extends ConsumerWidget {
             ),
           ),
         ),
+        const SizedBox(height: 16),
+        // FOCUS SECTION
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Focus Defaults',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildDropdownRow(
+                  label: 'Focus Duration',
+                  value: '${settings.focusDurationMinutes}',
+                  items: const ['15', '25', '30', '45', '60'],
+                  displayMap: const {
+                    '15': '15 min',
+                    '25': '25 min',
+                    '30': '30 min',
+                    '45': '45 min',
+                    '60': '60 min',
+                  },
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateSettings(
+                            settings.copyWith(
+                              focusDurationMinutes: int.parse(val),
+                            ),
+                          );
+                    }
+                  },
+                ),
+                const Divider(height: 24),
+                _buildDropdownRow(
+                  label: 'Short Break',
+                  value: '${settings.shortBreakMinutes}',
+                  items: const ['3', '5', '10', '15'],
+                  displayMap: const {
+                    '3': '3 min',
+                    '5': '5 min',
+                    '10': '10 min',
+                    '15': '15 min',
+                  },
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateSettings(
+                            settings.copyWith(
+                              shortBreakMinutes: int.parse(val),
+                            ),
+                          );
+                    }
+                  },
+                ),
+                const Divider(height: 24),
+                _buildDropdownRow(
+                  label: 'Long Break',
+                  value: '${settings.longBreakMinutes}',
+                  items: const ['10', '15', '20', '30'],
+                  displayMap: const {
+                    '10': '10 min',
+                    '15': '15 min',
+                    '20': '20 min',
+                    '30': '30 min',
+                  },
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateSettings(
+                            settings.copyWith(longBreakMinutes: int.parse(val)),
+                          );
+                    }
+                  },
+                ),
+                const Divider(height: 24),
+                _buildDropdownRow(
+                  label: 'Daily Focus Goal',
+                  value: '${settings.dailyFocusGoalHours}',
+                  items: const [
+                    '1.0',
+                    '2.0',
+                    '3.0',
+                    '4.0',
+                    '5.0',
+                    '6.0',
+                    '8.0',
+                  ],
+                  displayMap: const {
+                    '1.0': '1 hour',
+                    '2.0': '2 hours',
+                    '3.0': '3 hours',
+                    '4.0': '4 hours',
+                    '5.0': '5 hours',
+                    '6.0': '6 hours',
+                    '8.0': '8 hours',
+                  },
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateSettings(
+                            settings.copyWith(
+                              dailyFocusGoalHours: double.parse(val),
+                            ),
+                          );
+                    }
+                  },
+                ),
+                const Divider(height: 24),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Auto-start Breaks'),
+                  subtitle: const Text(
+                    'Automatically begin rest timer when focus finishes',
+                  ),
+                  value: settings.autoStartBreaks,
+                  onChanged: (val) {
+                    ref
+                        .read(appSettingsProvider.notifier)
+                        .updateSettings(
+                          settings.copyWith(autoStartBreaks: val),
+                        );
+                  },
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Auto-start Focus'),
+                  subtitle: const Text(
+                    'Automatically begin next focus timer when break finishes',
+                  ),
+                  value: settings.autoStartFocus,
+                  onChanged: (val) {
+                    ref
+                        .read(appSettingsProvider.notifier)
+                        .updateSettings(settings.copyWith(autoStartFocus: val));
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../database/database.dart';
 import '../providers/database_provider.dart';
+import '../providers/focus_provider.dart';
 import '../providers/task_provider.dart';
 import '../widgets/add_task_dialog.dart';
 import '../widgets/common_widgets.dart';
@@ -263,6 +265,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   ),
                 ],
 
+                const SizedBox(height: 16),
+                _buildFocusCard(context, task),
+
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 12),
@@ -412,6 +417,71 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildFocusCard(BuildContext context, Task task) {
+    final theme = Theme.of(context);
+    final seconds = ref.watch(taskFocusTimeProvider(task.id));
+    final h = seconds ~/ 3600;
+    final m = (seconds % 3600) ~/ 60;
+    final formattedText = seconds == 0
+        ? 'No sessions yet'
+        : (h > 0 ? '${h}h ${m}m' : '${m}m');
+
+    return Card(
+      color: theme.colorScheme.surfaceContainerLow,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.timer_outlined,
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Time Spent Focusing',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    formattedText,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                ref.read(focusProvider.notifier).selectTask(task);
+                context.go('/focus');
+              },
+              icon: const Icon(Icons.play_arrow, size: 18),
+              label: const Text('Focus'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

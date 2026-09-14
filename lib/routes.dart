@@ -7,6 +7,8 @@ import 'screens/analytics_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/daily_briefing_screen.dart';
 import 'screens/finance_screen.dart';
+import 'screens/focus_history_screen.dart';
+import 'screens/focus_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/settings_screen.dart';
@@ -27,6 +29,14 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/tasks',
           builder: (context, state) => const TasksScreen(),
+        ),
+        GoRoute(
+          path: '/focus',
+          builder: (context, state) => const FocusScreen(),
+        ),
+        GoRoute(
+          path: '/focus-history',
+          builder: (context, state) => const FocusHistoryScreen(),
         ),
         GoRoute(
           path: '/calendar',
@@ -71,10 +81,11 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
     final location = GoRouterState.of(context).uri.path;
 
     if (location == '/tasks') return 1;
-    if (location == '/calendar') return 2;
-    if (location == '/finance') return 3;
-    if (location == '/analytics') return 4;
-    if (location == '/settings') return 5;
+    if (location == '/focus' || location == '/focus-history') return 2;
+    if (location == '/calendar') return 3;
+    if (location == '/finance') return 4;
+    if (location == '/analytics') return 5;
+    if (location == '/settings') return 6;
 
     return 0; // Default to Home for '/', '/briefing', '/notifications'
   }
@@ -88,15 +99,18 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
         context.go('/tasks');
         break;
       case 2:
-        context.go('/calendar');
+        context.go('/focus');
         break;
       case 3:
-        context.go('/finance');
+        context.go('/calendar');
         break;
       case 4:
-        context.go('/analytics');
+        context.go('/finance');
         break;
       case 5:
+        context.go('/analytics');
+        break;
+      case 6:
         context.go('/settings');
         break;
     }
@@ -301,6 +315,11 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
                   label: Text('Tasks'),
                 ),
                 NavigationRailDestination(
+                  icon: Icon(Icons.timer_outlined),
+                  selectedIcon: Icon(Icons.timer),
+                  label: Text('Focus'),
+                ),
+                NavigationRailDestination(
                   icon: Icon(Icons.calendar_month_outlined),
                   selectedIcon: Icon(Icons.calendar_month),
                   label: Text('Calendar'),
@@ -348,6 +367,11 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
             icon: Icon(Icons.check_circle_outline),
             selectedIcon: Icon(Icons.check_circle),
             label: 'Tasks',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.timer_outlined),
+            selectedIcon: Icon(Icons.timer),
+            label: 'Focus',
           ),
           NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),

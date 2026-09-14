@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/finance_provider.dart';
+import '../providers/focus_provider.dart';
+import '../providers/settings_provider.dart';
 import '../providers/task_provider.dart';
 
 class DailyBriefingScreen extends ConsumerWidget {
@@ -380,40 +382,92 @@ class DailyBriefingScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
 
                 // 5. Smart Recommendations & Focus Action Button
-                _buildSectionCard(
-                  context,
-                  title: "Today's Focus",
-                  icon: Icons.center_focus_strong,
-                  color: Colors.amber[800]!,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (overdueTasks.isNotEmpty)
-                        const Text(
-                          '💡 You have overdue tasks. Consider clearing them first before starting new tasks.',
-                          style: TextStyle(fontSize: 13),
-                        )
-                      else if (highPriorityCount > 0)
-                        Text(
-                          '💡 Focus on your $highPriorityCount high-priority task(s) first today.',
-                          style: const TextStyle(fontSize: 13),
-                        )
-                      else
-                        const Text(
-                          '💡 Your schedule is clear. Great day to work on long-term goals!',
-                          style: TextStyle(fontSize: 13),
-                        ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: () => context.go('/tasks'),
-                          icon: const Icon(Icons.play_arrow),
-                          label: const Text('Start Focus'),
-                        ),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final todayFocusSeconds = ref.watch(
+                      todayFocusTimeSecondsProvider,
+                    );
+                    final todayFocusSessions = ref.watch(
+                      todayFocusSessionsProvider,
+                    );
+                    final completedSessions = todayFocusSessions
+                        .where((s) => s.completed)
+                        .length;
+                    final settings = ref.watch(appSettingsProvider);
+
+                    final hours = todayFocusSeconds ~/ 3600;
+                    final mins = (todayFocusSeconds % 3600) ~/ 60;
+                    final timeFormatted = hours > 0
+                        ? '${hours}h ${mins}m'
+                        : '${mins}m';
+                    final goalHours = settings.dailyFocusGoalHours;
+
+                    return _buildSectionCard(
+                      context,
+                      title: "Today's Focus",
+                      icon: Icons.center_focus_strong,
+                      color: Colors.amber[800]!,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    timeFormatted,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '$completedSessions sessions done (Goal: ${goalHours.toStringAsFixed(1)}h)',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              IconButton.filledTonal(
+                                onPressed: () => context.go('/focus'),
+                                icon: const Icon(Icons.timer_outlined),
+                                tooltip: 'Focus Mode',
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          if (overdueTasks.isNotEmpty)
+                            const Text(
+                              '💡 You have overdue tasks. Consider clearing them first before starting new tasks.',
+                              style: TextStyle(fontSize: 13),
+                            )
+                          else if (highPriorityCount > 0)
+                            Text(
+                              '💡 Focus on your $highPriorityCount high-priority task(s) first today.',
+                              style: const TextStyle(fontSize: 13),
+                            )
+                          else
+                            const Text(
+                              '💡 Your schedule is clear. Great day to work on long-term goals!',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: () => context.go('/focus'),
+                              icon: const Icon(Icons.play_arrow),
+                              label: const Text('Start Focus Session'),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 40),
               ],

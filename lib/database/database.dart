@@ -20,6 +20,7 @@ part 'database.g.dart';
     Subscriptions,
     AppNotifications,
     Settings,
+    FocusSessions,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -341,11 +342,47 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // =========================
+  // FOCUS SESSIONS
+  // =========================
+
+  Stream<List<FocusSession>> watchAllFocusSessions() {
+    return (select(
+      focusSessions,
+    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
+  }
+
+  Future<List<FocusSession>> getAllFocusSessions() {
+    return (select(
+      focusSessions,
+    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
+  }
+
+  Future<List<FocusSession>> getFocusSessionsForTask(int taskId) {
+    return (select(focusSessions)..where((s) => s.taskId.equals(taskId))).get();
+  }
+
+  Future<int> addFocusSession(FocusSessionsCompanion session) {
+    return into(focusSessions).insert(session);
+  }
+
+  Future<bool> updateFocusSession(FocusSession session) {
+    return update(focusSessions).replace(session);
+  }
+
+  Future<int> deleteFocusSession(int id) {
+    return (delete(focusSessions)..where((s) => s.id.equals(id))).go();
+  }
+
+  Future<int> clearAllFocusSessions() {
+    return delete(focusSessions).go();
+  }
+
+  // =========================
   // DATABASE VERSION & MIGRATIONS
   // =========================
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -365,6 +402,9 @@ class AppDatabase extends _$AppDatabase {
         if (from < 4) {
           await m.addColumn(appNotifications, appNotifications.read);
           await m.addColumn(appNotifications, appNotifications.payload);
+        }
+        if (from < 5) {
+          await m.createTable(focusSessions);
         }
       },
     );

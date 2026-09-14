@@ -1458,3 +1458,125 @@ class SubscriptionAnalyticsCard extends ConsumerWidget {
     );
   }
 }
+
+// ----------------------------------------------------
+// Focus Trend Line Chart
+// ----------------------------------------------------
+
+class FocusTrendChartCard extends ConsumerWidget {
+  const FocusTrendChartCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final focusTrendAsync = ref.watch(focusAnalyticsTrendProvider);
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Focus Time Trend (Minutes)',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Icon(Icons.timer, color: theme.colorScheme.primary, size: 20),
+              ],
+            ),
+            const SizedBox(height: 20),
+            focusTrendAsync.when(
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              error: (err, _) => Text('Error loading focus trend: $err'),
+              data: (points) {
+                if (points.isEmpty) {
+                  return const SizedBox(
+                    height: 180,
+                    child: Center(
+                      child: Text('No focus data available for this period'),
+                    ),
+                  );
+                }
+
+                int maxMins = 30;
+                for (final p in points) {
+                  if (p.minutes > maxMins) maxMins = p.minutes;
+                }
+
+                final spots = List.generate(points.length, (i) {
+                  return FlSpot(i.toDouble(), points[i].minutes.toDouble());
+                });
+
+                return SizedBox(
+                  height: 200,
+                  child: LineChart(
+                    LineChartData(
+                      gridData: const FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                      ),
+                      titlesData: FlTitlesData(
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (val, meta) {
+                              final idx = val.toInt();
+                              if (idx >= 0 && idx < points.length) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Text(
+                                    points[idx].label,
+                                    style: const TextStyle(fontSize: 10),
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      minY: 0,
+                      maxY: (maxMins * 1.2).toDouble(),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          color: theme.colorScheme.primary,
+                          barWidth: 3,
+                          dotData: const FlDotData(show: true),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.15,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

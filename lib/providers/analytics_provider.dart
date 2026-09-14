@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/database.dart';
 import 'budget_provider.dart';
+import 'database_provider.dart';
 import 'finance_provider.dart';
 import 'task_provider.dart';
 
@@ -1418,4 +1419,144 @@ final productivityInsightsProvider = Provider<AsyncValue<List<InsightItem>>>((
   }
 
   return AsyncValue.data(insights);
+});
+
+// ----------------------------------------------------
+// Focus Analytics
+// ----------------------------------------------------
+
+class FocusAnalyticsPoint {
+  final String label;
+  final int minutes;
+  final DateTime date;
+
+  const FocusAnalyticsPoint({
+    required this.label,
+    required this.minutes,
+    required this.date,
+  });
+}
+
+final focusAnalyticsTrendProvider = StreamProvider<List<FocusAnalyticsPoint>>((
+  ref,
+) {
+  final period = ref.watch(analyticsPeriodProvider);
+  final db = ref.watch(databaseProvider);
+
+  return db.watchAllFocusSessions().map((sessions) {
+    final now = DateTime.now();
+    final List<FocusAnalyticsPoint> result = [];
+
+    if (period == AnalyticsPeriod.today) {
+      final todaySessions = sessions.where(
+        (s) =>
+            s.startedAt.year == now.year &&
+            s.startedAt.month == now.month &&
+            s.startedAt.day == now.day &&
+            s.completed,
+      );
+      for (int i = 0; i < 24; i += 4) {
+        final blockSecs = todaySessions
+            .where((s) => s.startedAt.hour >= i && s.startedAt.hour < i + 4)
+            .fold<int>(0, (sum, s) => sum + s.durationSeconds);
+        result.add(
+          FocusAnalyticsPoint(
+            label: '${i}h',
+            minutes: blockSecs ~/ 60,
+            date: now,
+          ),
+        );
+      }
+    } else if (period == AnalyticsPeriod.sevenDays) {
+      final startDate = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(const Duration(days: 6));
+      for (int i = 0; i < 7; i++) {
+        final d = startDate.add(Duration(days: i));
+        final daySecs = sessions
+            .where(
+              (s) =>
+                  s.startedAt.year == d.year &&
+                  s.startedAt.month == d.month &&
+                  s.startedAt.day == d.day &&
+                  s.completed,
+            )
+            .fold<int>(0, (sum, s) => sum + s.durationSeconds);
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        result.add(
+          FocusAnalyticsPoint(
+            label: dayNames[d.weekday - 1],
+            minutes: daySecs ~/ 60,
+            date: d,
+          ),
+        );
+      }
+    } else if (period == AnalyticsPeriod.thirtyDays) {
+      final startDate = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(const Duration(days: 29));
+      for (int i = 0; i < 30; i += 3) {
+        final d = startDate.add(Duration(days: i));
+        int totalSecs = 0;
+        for (int j = 0; j < 3; j++) {
+          final targetD = d.add(Duration(days: j));
+          totalSecs += sessions
+              .where(
+                (s) =>
+                    s.startedAt.year == targetD.year &&
+                    s.startedAt.month == targetD.month &&
+                    s.startedAt.day == targetD.day &&
+                    s.completed,
+              )
+              .fold<int>(0, (sum, s) => sum + s.durationSeconds);
+        }
+        result.add(
+          FocusAnalyticsPoint(
+            label: '${d.day}/${d.month}',
+            minutes: totalSecs ~/ 60,
+            date: d,
+          ),
+        );
+      }
+    } else {
+      for (int i = 11; i >= 0; i--) {
+        final mDate = DateTime(now.year, now.month - i, 1);
+        final monthSecs = sessions
+            .where(
+              (s) =>
+                  s.startedAt.year == mDate.year &&
+                  s.startedAt.month == mDate.month &&
+                  s.completed,
+            )
+            .fold<int>(0, (sum, s) => sum + s.durationSeconds);
+        const monthNames = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+        result.add(
+          FocusAnalyticsPoint(
+            label: monthNames[mDate.month - 1],
+            minutes: monthSecs ~/ 60,
+            date: mDate,
+          ),
+        );
+      }
+    }
+
+    return result;
+  });
 });

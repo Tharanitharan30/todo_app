@@ -149,3 +149,21 @@ class Budgets extends Table {
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
+
+class FocusSessions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get taskId => integer().nullable()();
+
+  DateTimeColumn get startedAt => dateTime()();
+
+  DateTimeColumn get endedAt => dateTime().nullable()();
+
+  IntColumn get durationSeconds => integer().withDefault(const Constant(0))();
+
+  TextColumn get type => text().withDefault(const Constant('focus'))();
+
+  BoolColumn get completed => boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}

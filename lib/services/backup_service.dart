@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../database/database.dart';
 import '../providers/database_provider.dart';
+import '../providers/focus_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/settings_provider.dart';
 import 'notification_service.dart';
@@ -100,6 +101,7 @@ class BackupService {
     final savingsList = await db.getAllSavingsGoals();
     final subscriptionsList = await db.getAllSubscriptions();
     final notificationsList = await db.select(db.appNotifications).get();
+    final focusSessionsList = await db.getAllFocusSessions();
     final settingsList = await db.getAllSettings();
 
     final backupMap = {
@@ -214,6 +216,20 @@ class BackupService {
                 'read': n.read,
                 'payload': n.payload,
                 'createdAt': n.createdAt.toIso8601String(),
+              },
+            )
+            .toList(),
+        'focusSessions': focusSessionsList
+            .map(
+              (f) => {
+                'id': f.id,
+                'taskId': f.taskId,
+                'startedAt': f.startedAt.toIso8601String(),
+                'endedAt': f.endedAt?.toIso8601String(),
+                'durationSeconds': f.durationSeconds,
+                'type': f.type,
+                'completed': f.completed,
+                'createdAt': f.createdAt.toIso8601String(),
               },
             )
             .toList(),
@@ -350,6 +366,7 @@ class BackupService {
       await db.transaction(() async {
         // Clear existing tables
         await db.delete(db.subtasks).go();
+        await db.delete(db.focusSessions).go();
         await db.delete(db.tasks).go();
         await db.delete(db.expenses).go();
         await db.delete(db.income).go();
@@ -560,6 +577,37 @@ class BackupService {
                   createdAt: Value(
                     n['createdAt'] != null
                         ? DateTime.parse(n['createdAt'])
+                        : DateTime.now(),
+                  ),
+                ),
+              );
+        }
+
+        // Insert Focus Sessions
+        final rawFocusSessions = data['focusSessions'] as List? ?? [];
+        for (final rawF in rawFocusSessions) {
+          final f = rawF as Map<String, dynamic>;
+          final oldTaskId = f['taskId'] as int?;
+          final mappedTaskId = oldTaskId != null
+              ? taskIdMapping[oldTaskId] ?? oldTaskId
+              : null;
+          await db
+              .into(db.focusSessions)
+              .insert(
+                FocusSessionsCompanion.insert(
+                  taskId: Value(mappedTaskId),
+                  startedAt: DateTime.parse(f['startedAt']),
+                  endedAt: Value(
+                    f['endedAt'] != null
+                        ? DateTime.tryParse(f['endedAt'])
+                        : null,
+                  ),
+                  durationSeconds: Value(f['durationSeconds'] ?? 0),
+                  type: Value(f['type'] ?? 'focus'),
+                  completed: Value(f['completed'] ?? true),
+                  createdAt: Value(
+                    f['createdAt'] != null
+                        ? DateTime.parse(f['createdAt'])
                         : DateTime.now(),
                   ),
                 ),
@@ -868,6 +916,7 @@ class BackupService {
     await db.transaction(() async {
       if (clearAll || clearTasks) {
         await db.delete(db.subtasks).go();
+        await db.delete(db.focusSessions).go();
         await db.delete(db.tasks).go();
       }
       if (clearAll || clearFinance) {
@@ -938,6 +987,9 @@ class BackupService {
   static void _invalidateAllProviders(WidgetRef ref) {
     ref.invalidate(appNotificationsProvider);
     ref.invalidate(unreadNotificationCountProvider);
+    ref.invalidate(todayFocusSessionsProvider);
+    ref.invalidate(todayFocusTimeSecondsProvider);
+    ref.invalidate(weeklyFocusTimeSecondsProvider);
   }
 
   static String _dateStamp() {
