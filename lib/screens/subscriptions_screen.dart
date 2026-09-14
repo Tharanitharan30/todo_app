@@ -23,7 +23,8 @@ class SubscriptionsScreen extends ConsumerWidget {
       text: existing != null ? existing.amount.toString() : '',
     );
     String selectedCycle = existing?.billingCycle ?? 'Monthly';
-    DateTime selectedNextDate = existing?.nextBillingDate ??
+    DateTime selectedNextDate =
+        existing?.nextBillingDate ??
         DateTime.now().add(const Duration(days: 30));
     bool isActive = existing?.active ?? true;
 
@@ -33,7 +34,9 @@ class SubscriptionsScreen extends ConsumerWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text(existing == null ? 'Add Subscription' : 'Edit Subscription'),
+              title: Text(
+                existing == null ? 'Add Subscription' : 'Edit Subscription',
+              ),
               content: SingleChildScrollView(
                 child: SizedBox(
                   width: 400,
@@ -56,17 +59,22 @@ class SubscriptionsScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: amountController,
-                          keyboardType:
-                              const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
                           decoration: const InputDecoration(
                             labelText: 'Amount (₹)',
                             prefixText: '₹ ',
                             border: OutlineInputBorder(),
                           ),
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Enter amount';
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Enter amount';
+                            }
                             final parsed = double.tryParse(v.trim());
-                            if (parsed == null || parsed <= 0) return 'Enter valid amount > 0';
+                            if (parsed == null || parsed <= 0) {
+                              return 'Enter valid amount > 0';
+                            }
                             return null;
                           },
                         ),
@@ -80,10 +88,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                             border: OutlineInputBorder(),
                           ),
                           items: billingCycles.map((c) {
-                            return DropdownMenuItem(
-                              value: c,
-                              child: Text(c),
-                            );
+                            return DropdownMenuItem(value: c, child: Text(c));
                           }).toList(),
                           onChanged: (val) {
                             if (val != null) {
@@ -99,8 +104,12 @@ class SubscriptionsScreen extends ConsumerWidget {
                             final picked = await showDatePicker(
                               context: context,
                               initialDate: selectedNextDate,
-                              firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                              lastDate: DateTime.now().add(const Duration(days: 3650)),
+                              firstDate: DateTime.now().subtract(
+                                const Duration(days: 365),
+                              ),
+                              lastDate: DateTime.now().add(
+                                const Duration(days: 3650),
+                              ),
                             );
                             if (picked != null) {
                               setState(() {
@@ -159,13 +168,16 @@ class SubscriptionsScreen extends ConsumerWidget {
                       await db.updateSubscription(updated);
 
                       if (isActive) {
-                        await NotificationService().scheduleSubscriptionReminder(
-                          subscriptionId: updated.id,
-                          subscriptionName: updated.name,
-                          nextBillingDate: updated.nextBillingDate,
-                        );
+                        await NotificationService()
+                            .scheduleSubscriptionReminder(
+                              subscriptionId: updated.id,
+                              subscriptionName: updated.name,
+                              nextBillingDate: updated.nextBillingDate,
+                            );
                       } else {
-                        await NotificationService().cancelSubscriptionReminder(updated.id);
+                        await NotificationService().cancelSubscriptionReminder(
+                          updated.id,
+                        );
                       }
                     } else {
                       final companion = SubscriptionsCompanion(
@@ -178,11 +190,12 @@ class SubscriptionsScreen extends ConsumerWidget {
                       final newId = await db.addSubscription(companion);
 
                       if (isActive) {
-                        await NotificationService().scheduleSubscriptionReminder(
-                          subscriptionId: newId,
-                          subscriptionName: name,
-                          nextBillingDate: selectedNextDate,
-                        );
+                        await NotificationService()
+                            .scheduleSubscriptionReminder(
+                              subscriptionId: newId,
+                              subscriptionName: name,
+                              nextBillingDate: selectedNextDate,
+                            );
                       }
                     }
 
@@ -191,7 +204,9 @@ class SubscriptionsScreen extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            existing == null ? 'Subscription added' : 'Subscription updated',
+                            existing == null
+                                ? 'Subscription added'
+                                : 'Subscription updated',
                           ),
                         ),
                       );
@@ -237,9 +252,9 @@ class SubscriptionsScreen extends ConsumerWidget {
       await NotificationService().cancelSubscriptionReminder(sub.id);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Subscription deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Subscription deleted')));
       }
     }
   }
@@ -301,7 +316,11 @@ class SubscriptionsScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      Container(height: 40, width: 1, color: Colors.grey.withValues(alpha: 0.3)),
+                      Container(
+                        height: 40,
+                        width: 1,
+                        color: Colors.grey.withValues(alpha: 0.3),
+                      ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -345,8 +364,11 @@ class SubscriptionsScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.subscriptions_outlined,
-                            size: 64, color: Colors.grey),
+                        const Icon(
+                          Icons.subscriptions_outlined,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(height: 16),
                         const Text(
                           'No subscriptions tracked yet',
@@ -354,7 +376,8 @@ class SubscriptionsScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         FilledButton.icon(
-                          onPressed: () => _showSubscriptionDialog(context, ref),
+                          onPressed: () =>
+                              _showSubscriptionDialog(context, ref),
                           icon: const Icon(Icons.add),
                           label: const Text('Add First Subscription'),
                         ),
@@ -391,8 +414,9 @@ class SubscriptionsScreen extends ConsumerWidget {
                           sub.name,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            decoration:
-                                sub.active ? null : TextDecoration.lineThrough,
+                            decoration: sub.active
+                                ? null
+                                : TextDecoration.lineThrough,
                           ),
                         ),
                         subtitle: Text(
@@ -418,10 +442,10 @@ class SubscriptionsScreen extends ConsumerWidget {
                                 if (val) {
                                   await NotificationService()
                                       .scheduleSubscriptionReminder(
-                                    subscriptionId: sub.id,
-                                    subscriptionName: sub.name,
-                                    nextBillingDate: sub.nextBillingDate,
-                                  );
+                                        subscriptionId: sub.id,
+                                        subscriptionName: sub.name,
+                                        nextBillingDate: sub.nextBillingDate,
+                                      );
                                 } else {
                                   await NotificationService()
                                       .cancelSubscriptionReminder(sub.id);
@@ -444,8 +468,10 @@ class SubscriptionsScreen extends ConsumerWidget {
                                 ),
                                 const PopupMenuItem(
                                   value: 'delete',
-                                  child: Text('Delete',
-                                      style: TextStyle(color: Colors.red)),
+                                  child: Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
                                 ),
                               ],
                             ),

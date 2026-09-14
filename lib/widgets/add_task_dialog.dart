@@ -10,10 +10,7 @@ import '../services/notification_service.dart';
 class AddTaskDialog extends ConsumerStatefulWidget {
   final Task? taskToEdit;
 
-  const AddTaskDialog({
-    super.key,
-    this.taskToEdit,
-  });
+  const AddTaskDialog({super.key, this.taskToEdit});
 
   @override
   ConsumerState<AddTaskDialog> createState() {
@@ -116,8 +113,10 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
         child: Wrap(
           children: [
             const ListTile(
-              title: Text('Select Reminder Option',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(
+                'Select Reminder Option',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             ListTile(
               leading: const Icon(Icons.timer),
@@ -159,8 +158,13 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
 
     DateTime dueDateTime = dueDate!;
     if (dueTime != null) {
-      dueDateTime = DateTime(dueDate!.year, dueDate!.month, dueDate!.day,
-          dueTime!.hour, dueTime!.minute);
+      dueDateTime = DateTime(
+        dueDate!.year,
+        dueDate!.month,
+        dueDate!.day,
+        dueTime!.hour,
+        dueTime!.minute,
+      );
     }
 
     DateTime computedReminder;
@@ -191,9 +195,7 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
 
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a task title'),
-        ),
+        const SnackBar(content: Text('Please enter a task title')),
       );
       return;
     }
@@ -265,7 +267,9 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
         );
 
         // Update task with tags, reminderAt, notes
-        final companion = updated.toCompanion(true).copyWith(
+        final companion = updated
+            .toCompanion(true)
+            .copyWith(
               tags: drift.Value(tagsController.text.trim()),
               reminderAt: drift.Value(reminderAt),
               notes: drift.Value(notesController.text.trim()),
@@ -304,9 +308,11 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
 
       messenger.showSnackBar(
         SnackBar(
-          content: Text(widget.taskToEdit == null
-              ? 'Task added successfully'
-              : 'Task updated successfully'),
+          content: Text(
+            widget.taskToEdit == null
+                ? 'Task added successfully'
+                : 'Task updated successfully',
+          ),
         ),
       );
     } catch (error, stackTrace) {
@@ -324,9 +330,7 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
         builder: (_) {
           return AlertDialog(
             title: const Text('Could not save task'),
-            content: SingleChildScrollView(
-              child: Text('$error'),
-            ),
+            content: SingleChildScrollView(child: Text('$error')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -366,8 +370,9 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                     hintText: 'What needs to be done?',
                     prefixIcon: Icon(Icons.task_alt),
                   ),
-                  validator: (val) =>
-                      val == null || val.trim().isEmpty ? 'Title is required' : null,
+                  validator: (val) => val == null || val.trim().isEmpty
+                      ? 'Title is required'
+                      : null,
                   textInputAction: TextInputAction.next,
                 ),
                 const SizedBox(height: 14),
@@ -395,9 +400,15 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                           prefixIcon: Icon(Icons.flag_outlined),
                         ),
                         items: const [
-                          DropdownMenuItem(value: 'urgent', child: Text('Urgent')),
+                          DropdownMenuItem(
+                            value: 'urgent',
+                            child: Text('Urgent'),
+                          ),
                           DropdownMenuItem(value: 'high', child: Text('High')),
-                          DropdownMenuItem(value: 'medium', child: Text('Medium')),
+                          DropdownMenuItem(
+                            value: 'medium',
+                            child: Text('Medium'),
+                          ),
                           DropdownMenuItem(value: 'low', child: Text('Low')),
                         ],
                         onChanged: isSaving
@@ -416,11 +427,23 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                           prefixIcon: Icon(Icons.category_outlined),
                         ),
                         items: const [
-                          DropdownMenuItem(value: 'personal', child: Text('Personal')),
+                          DropdownMenuItem(
+                            value: 'personal',
+                            child: Text('Personal'),
+                          ),
                           DropdownMenuItem(value: 'work', child: Text('Work')),
-                          DropdownMenuItem(value: 'study', child: Text('Study')),
-                          DropdownMenuItem(value: 'project', child: Text('Project')),
-                          DropdownMenuItem(value: 'other', child: Text('Other')),
+                          DropdownMenuItem(
+                            value: 'study',
+                            child: Text('Study'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'project',
+                            child: Text('Project'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'other',
+                            child: Text('Other'),
+                          ),
                         ],
                         onChanged: isSaving
                             ? null
@@ -476,7 +499,10 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                 // Reminder button
                 OutlinedButton.icon(
                   onPressed: isSaving ? null : _pickReminder,
-                  icon: const Icon(Icons.notifications_active_outlined, size: 18),
+                  icon: const Icon(
+                    Icons.notifications_active_outlined,
+                    size: 18,
+                  ),
                   label: Text(
                     reminderAt == null
                         ? 'Set Reminder'
@@ -533,9 +559,18 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                       prefixIcon: Icon(Icons.update),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'daily', child: Text('Every day')),
-                      DropdownMenuItem(value: 'weekly', child: Text('Every week')),
-                      DropdownMenuItem(value: 'monthly', child: Text('Every month')),
+                      DropdownMenuItem(
+                        value: 'daily',
+                        child: Text('Every day'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'weekly',
+                        child: Text('Every week'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'monthly',
+                        child: Text('Every month'),
+                      ),
                       DropdownMenuItem(value: 'custom', child: Text('Custom')),
                     ],
                     onChanged: (val) {
@@ -562,9 +597,9 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Icon(isEditing ? Icons.save : Icons.add),
-          label: Text(isSaving
-              ? 'Saving...'
-              : (isEditing ? 'Save Changes' : 'Add Task')),
+          label: Text(
+            isSaving ? 'Saving...' : (isEditing ? 'Save Changes' : 'Add Task'),
+          ),
         ),
       ],
     );

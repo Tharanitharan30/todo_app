@@ -65,18 +65,13 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> uncompleteTask(int id) {
     return (update(tasks)..where((task) => task.id.equals(id))).write(
-      const TasksCompanion(
-        status: Value('pending'),
-        completedAt: Value(null),
-      ),
+      const TasksCompanion(status: Value('pending'), completedAt: Value(null)),
     );
   }
 
   Future<void> toggleTaskImportant(int id, bool isImportant) {
     return (update(tasks)..where((task) => task.id.equals(id))).write(
-      TasksCompanion(
-        isImportant: Value(isImportant),
-      ),
+      TasksCompanion(isImportant: Value(isImportant)),
     );
   }
 
@@ -146,9 +141,7 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> toggleSubtask(int id, bool completed) {
     return (update(subtasks)..where((s) => s.id.equals(id))).write(
-      SubtasksCompanion(
-        completed: Value(completed),
-      ),
+      SubtasksCompanion(completed: Value(completed)),
     );
   }
 
@@ -282,9 +275,7 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> toggleSubscriptionActive(int id, bool active) {
     return (update(subscriptions)..where((s) => s.id.equals(id))).write(
-      SubscriptionsCompanion(
-        active: Value(active),
-      ),
+      SubscriptionsCompanion(active: Value(active)),
     );
   }
 
@@ -293,15 +284,15 @@ class AppDatabase extends _$AppDatabase {
   // =========================
 
   Stream<List<AppNotification>> watchAllNotifications() {
-    return (select(appNotifications)
-          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-        .watch();
+    return (select(
+      appNotifications,
+    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
   }
 
   Stream<int> watchUnreadNotificationsCount() {
-    return (select(appNotifications)..where((n) => n.read.equals(false)))
-        .watch()
-        .map((list) => list.length);
+    return (select(
+      appNotifications,
+    )..where((n) => n.read.equals(false))).watch().map((list) => list.length);
   }
 
   Future<int> addAppNotification(AppNotificationsCompanion item) {
@@ -333,8 +324,9 @@ class AppDatabase extends _$AppDatabase {
   // =========================
 
   Future<String?> getSetting(String key) async {
-    final entry =
-        await (select(settings)..where((s) => s.key.equals(key))).getSingleOrNull();
+    final entry = await (select(
+      settings,
+    )..where((s) => s.key.equals(key))).getSingleOrNull();
     return entry?.value;
   }
 
@@ -343,9 +335,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> setSetting(String key, String value) {
-    return into(settings).insertOnConflictUpdate(
-      Setting(key: key, value: value),
-    );
+    return into(
+      settings,
+    ).insertOnConflictUpdate(Setting(key: key, value: value));
   }
 
   // =========================
@@ -380,19 +372,15 @@ class AppDatabase extends _$AppDatabase {
 }
 
 LazyDatabase _openConnection() {
-  return LazyDatabase(
-    () async {
-      final dbFolder = await getApplicationSupportDirectory();
-      if (!await dbFolder.exists()) {
-        await dbFolder.create(recursive: true);
-      }
-      final dbFile = File(
-        path.join(dbFolder.path, 'personal_command_center.sqlite'),
-      );
+  return LazyDatabase(() async {
+    final dbFolder = await getApplicationSupportDirectory();
+    if (!await dbFolder.exists()) {
+      await dbFolder.create(recursive: true);
+    }
+    final dbFile = File(
+      path.join(dbFolder.path, 'personal_command_center.sqlite'),
+    );
 
-      return NativeDatabase.createInBackground(
-        dbFile,
-      );
-    },
-  );
+    return NativeDatabase.createInBackground(dbFile);
+  });
 }

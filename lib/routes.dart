@@ -23,10 +23,7 @@ final GoRouter appRouter = GoRouter(
         return AppNavigation(child: child);
       },
       routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => const HomeScreen(),
-        ),
+        GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
         GoRoute(
           path: '/tasks',
           builder: (context, state) => const TasksScreen(),
@@ -63,10 +60,7 @@ final GoRouter appRouter = GoRouter(
 class AppNavigation extends ConsumerStatefulWidget {
   final Widget child;
 
-  const AppNavigation({
-    super.key,
-    required this.child,
-  });
+  const AppNavigation({super.key, required this.child});
 
   @override
   ConsumerState<AppNavigation> createState() => _AppNavigationState();
@@ -76,23 +70,13 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
   int get currentIndex {
     final location = GoRouterState.of(context).uri.path;
 
-    if (location.startsWith('/tasks')) {
-      return 1;
-    }
-    if (location.startsWith('/calendar')) {
-      return 2;
-    }
-    if (location.startsWith('/finance')) {
-      return 3;
-    }
-    if (location.startsWith('/analytics')) {
-      return 4;
-    }
-    if (location.startsWith('/settings')) {
-      return 5;
-    }
+    if (location == '/tasks') return 1;
+    if (location == '/calendar') return 2;
+    if (location == '/finance') return 3;
+    if (location == '/analytics') return 4;
+    if (location == '/settings') return 5;
 
-    return 0;
+    return 0; // Default to Home for '/', '/briefing', '/notifications'
   }
 
   void navigateTo(int index) {
@@ -126,115 +110,127 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 10, 24, 30),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Quick Add',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
                 // ADD TASK
                 ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.check_circle_outline),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  tileColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Colors.blue,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_outline,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   title: const Text(
                     'Add Task',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  subtitle: const Text('Create a new task'),
+                  subtitle: const Text('Create a new task or reminder'),
                   onTap: () {
                     Navigator.pop(sheetContext);
-
-                    Future.delayed(
-                      const Duration(milliseconds: 150),
-                      () {
-                        if (!mounted) return;
-
-                        showDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          builder: (dialogContext) {
-                            return const AddTaskDialog();
-                          },
-                        );
-                      },
-                    );
+                    Future.delayed(const Duration(milliseconds: 150), () {
+                      if (!mounted) return;
+                      showDialog(
+                        context: context,
+                        builder: (_) => const AddTaskDialog(),
+                      );
+                    });
                   },
                 ),
-
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
                 // ADD EXPENSE
                 ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.account_balance_wallet_outlined),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  tileColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   title: const Text(
                     'Add Expense',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  subtitle: const Text('Record a new expense'),
+                  subtitle: const Text('Log a new daily transaction'),
                   onTap: () {
                     Navigator.pop(sheetContext);
-
-                    Future.delayed(
-                      const Duration(milliseconds: 150),
-                      () {
-                        if (!mounted) return;
-
-                        showDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          builder: (dialogContext) {
-                            return const AddExpenseDialog();
-                          },
-                        );
-                      },
-                    );
+                    Future.delayed(const Duration(milliseconds: 150), () {
+                      if (!mounted) return;
+                      showDialog(
+                        context: context,
+                        builder: (_) => const AddExpenseDialog(),
+                      );
+                    });
                   },
                 ),
-
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
                 // ADD INCOME
                 ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.attach_money),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  tileColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.attach_money,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                   title: const Text(
                     'Add Income',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  subtitle: const Text('Record new income'),
+                  subtitle: const Text('Record earnings or incoming funds'),
                   onTap: () {
                     Navigator.pop(sheetContext);
-
-                    Future.delayed(
-                      const Duration(milliseconds: 150),
-                      () {
-                        if (!mounted) return;
-
-                        showDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          builder: (dialogContext) {
-                            return const AddIncomeDialog();
-                          },
-                        );
-                      },
-                    );
+                    Future.delayed(const Duration(milliseconds: 150), () {
+                      if (!mounted) return;
+                      showDialog(
+                        context: context,
+                        builder: (_) => const AddIncomeDialog(),
+                      );
+                    });
                   },
                 ),
               ],
@@ -273,21 +269,22 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
               onDestinationSelected: navigateTo,
               labelType: NavigationRailLabelType.all,
               leading: Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Column(
                   children: [
-                    IconButton(
+                    FloatingActionButton.small(
                       tooltip: 'Quick Add',
+                      elevation: 0,
                       onPressed: showQuickAdd,
-                      icon: const Icon(Icons.add_circle_outline, size: 28),
+                      child: const Icon(Icons.add),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     _buildNotificationBellIcon(unreadCount),
                     const SizedBox(height: 8),
                     IconButton(
                       tooltip: 'Daily Briefing',
                       onPressed: () => context.go('/briefing'),
-                      icon: const Icon(Icons.wb_sunny_outlined, size: 24),
+                      icon: const Icon(Icons.wb_sunny_outlined, size: 22),
                     ),
                   ],
                 ),
@@ -333,9 +330,6 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 0,
-      ),
       body: widget.child,
       floatingActionButton: FloatingActionButton(
         onPressed: showQuickAdd,

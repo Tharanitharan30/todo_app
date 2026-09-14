@@ -22,7 +22,7 @@ class DailyBriefingScreen extends ConsumerWidget {
       'Thursday',
       'Friday',
       'Saturday',
-      'Sunday'
+      'Sunday',
     ];
     const monthNames = [
       'January',
@@ -36,7 +36,7 @@ class DailyBriefingScreen extends ConsumerWidget {
       'September',
       'October',
       'November',
-      'December'
+      'December',
     ];
     final dateString =
         '${weekdayNames[now.weekday - 1]}, ${monthNames[now.month - 1]} ${now.day}';
@@ -63,38 +63,61 @@ class DailyBriefingScreen extends ConsumerWidget {
         error: (err, _) => Center(child: Text('Error loading briefing: $err')),
         data: (allTasks) {
           final todayStart = DateTime(now.year, now.month, now.day);
-          final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+          final todayEnd = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            23,
+            59,
+            59,
+            999,
+          );
 
-          final todayTasks = allTasks.where((t) =>
-              t.dueDate != null &&
-              t.dueDate!.isAfter(todayStart.subtract(const Duration(milliseconds: 1))) &&
-              t.dueDate!.isBefore(todayEnd.add(const Duration(milliseconds: 1)))).toList();
+          final todayTasks = allTasks
+              .where(
+                (t) =>
+                    t.dueDate != null &&
+                    t.dueDate!.isAfter(
+                      todayStart.subtract(const Duration(milliseconds: 1)),
+                    ) &&
+                    t.dueDate!.isBefore(
+                      todayEnd.add(const Duration(milliseconds: 1)),
+                    ),
+              )
+              .toList();
 
           final highPriorityCount = todayTasks
               .where((t) => t.priority == 'urgent' || t.priority == 'high')
               .length;
 
           final overdueTasks = allTasks
-              .where((t) =>
-                  t.status != 'completed' &&
-                  t.dueDate != null &&
-                  t.dueDate!.isBefore(todayStart))
+              .where(
+                (t) =>
+                    t.status != 'completed' &&
+                    t.dueDate != null &&
+                    t.dueDate!.isBefore(todayStart),
+              )
               .toList();
 
           // Yesterday completed tasks
           final yesterdayStart = todayStart.subtract(const Duration(days: 1));
-          final yesterdayEnd = todayStart.subtract(const Duration(milliseconds: 1));
+          final yesterdayEnd = todayStart.subtract(
+            const Duration(milliseconds: 1),
+          );
           final completedYesterday = allTasks
-              .where((t) =>
-                  t.status == 'completed' &&
-                  t.completedAt != null &&
-                  t.completedAt!.isAfter(yesterdayStart) &&
-                  t.completedAt!.isBefore(yesterdayEnd))
+              .where(
+                (t) =>
+                    t.status == 'completed' &&
+                    t.completedAt != null &&
+                    t.completedAt!.isAfter(yesterdayStart) &&
+                    t.completedAt!.isBefore(yesterdayEnd),
+              )
               .length;
 
           // Today completed / rate
-          final todayCompleted =
-              todayTasks.where((t) => t.status == 'completed').length;
+          final todayCompleted = todayTasks
+              .where((t) => t.status == 'completed')
+              .length;
           final todayRate = todayTasks.isEmpty
               ? 0.0
               : (todayCompleted / todayTasks.length) * 100;
@@ -102,9 +125,15 @@ class DailyBriefingScreen extends ConsumerWidget {
           // Today's spending
           final expenses = expensesAsync.value ?? [];
           final todaySpent = expenses
-              .where((e) =>
-                  e.date.isAfter(todayStart.subtract(const Duration(milliseconds: 1))) &&
-                  e.date.isBefore(todayEnd.add(const Duration(milliseconds: 1))))
+              .where(
+                (e) =>
+                    e.date.isAfter(
+                      todayStart.subtract(const Duration(milliseconds: 1)),
+                    ) &&
+                    e.date.isBefore(
+                      todayEnd.add(const Duration(milliseconds: 1)),
+                    ),
+              )
               .fold(0.0, (sum, e) => sum + e.amount);
 
           return SingleChildScrollView(
@@ -149,48 +178,52 @@ class DailyBriefingScreen extends ConsumerWidget {
                           ),
                         )
                       else ...[
-                        ...todayTasks.map((t) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    t.status == 'completed'
-                                        ? Icons.check_circle
-                                        : Icons.radio_button_unchecked,
-                                    size: 18,
-                                    color: t.status == 'completed'
-                                        ? Colors.green
-                                        : Colors.grey,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      t.title,
-                                      style: TextStyle(
-                                        decoration: t.status == 'completed'
-                                            ? TextDecoration.lineThrough
-                                            : null,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                        ...todayTasks.map(
+                          (t) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  t.status == 'completed'
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  size: 18,
+                                  color: t.status == 'completed'
+                                      ? Colors.green
+                                      : Colors.grey,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    t.title,
+                                    style: TextStyle(
+                                      decoration: t.status == 'completed'
+                                          ? TextDecoration.lineThrough
+                                          : null,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                  if (t.priority == 'urgent' ||
-                                      t.priority == 'high')
-                                    Chip(
-                                      visualDensity: VisualDensity.compact,
-                                      label: Text(
-                                        t.priority.toUpperCase(),
-                                        style: const TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red),
+                                ),
+                                if (t.priority == 'urgent' ||
+                                    t.priority == 'high')
+                                  Chip(
+                                    visualDensity: VisualDensity.compact,
+                                    label: Text(
+                                      t.priority.toUpperCase(),
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red,
                                       ),
-                                      backgroundColor:
-                                          Colors.red.withValues(alpha: 0.1),
                                     ),
-                                ],
-                              ),
-                            )),
+                                    backgroundColor: Colors.red.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
                         const Divider(height: 20),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -198,16 +231,19 @@ class DailyBriefingScreen extends ConsumerWidget {
                             Text(
                               '${todayTasks.length} tasks today',
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 13),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
                             ),
                             Text(
                               '$highPriorityCount high priority',
                               style: TextStyle(
-                                  color: highPriorityCount > 0
-                                      ? Colors.red
-                                      : Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13),
+                                color: highPriorityCount > 0
+                                    ? Colors.red
+                                    : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
@@ -233,13 +269,15 @@ class DailyBriefingScreen extends ConsumerWidget {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
-                        ...overdueTasks.map((t) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Text(
-                                '• ${t.title}',
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            )),
+                        ...overdueTasks.map(
+                          (t) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Text(
+                              '• ${t.title}',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -258,16 +296,24 @@ class DailyBriefingScreen extends ConsumerWidget {
                       color: Colors.teal,
                       child: Column(
                         children: [
-                          _financeRow("Today's spending",
-                              '₹${todaySpent.toStringAsFixed(0)}'),
-                          _financeRow("This month's spending",
-                              '₹${summary.expenses.toStringAsFixed(0)}'),
-                          _financeRow("This month's income",
-                              '₹${summary.income.toStringAsFixed(0)}'),
+                          _financeRow(
+                            "Today's spending",
+                            '₹${todaySpent.toStringAsFixed(0)}',
+                          ),
+                          _financeRow(
+                            "This month's spending",
+                            '₹${summary.expenses.toStringAsFixed(0)}',
+                          ),
+                          _financeRow(
+                            "This month's income",
+                            '₹${summary.income.toStringAsFixed(0)}',
+                          ),
                           const Divider(),
-                          _financeRow('Current balance',
-                              '₹${summary.balance.toStringAsFixed(0)}',
-                              isBold: true),
+                          _financeRow(
+                            'Current balance',
+                            '₹${summary.balance.toStringAsFixed(0)}',
+                            isBold: true,
+                          ),
                         ],
                       ),
                     );
@@ -291,12 +337,16 @@ class DailyBriefingScreen extends ConsumerWidget {
                             Text(
                               'Completed Yesterday',
                               style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[600]),
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
                             ),
                             Text(
                               '$completedYesterday tasks',
                               style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -308,14 +358,17 @@ class DailyBriefingScreen extends ConsumerWidget {
                             Text(
                               "Today's Completion Rate",
                               style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[600]),
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
                             ),
                             Text(
                               '${todayRate.toStringAsFixed(0)}%',
                               style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.purple),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.purple,
+                              ),
                             ),
                           ],
                         ),
@@ -417,10 +470,13 @@ class DailyBriefingScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.w500)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+            ),
+          ),
           Text(
             value,
             style: TextStyle(

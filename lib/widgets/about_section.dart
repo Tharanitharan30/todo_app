@@ -21,8 +21,10 @@ class AboutSection extends StatelessWidget {
                     color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.info_outline_rounded,
-                      color: theme.colorScheme.primary),
+                  child: Icon(
+                    Icons.info_outline_rounded,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Column(
@@ -66,10 +68,7 @@ class AboutSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 11, color: Colors.grey),
-        ),
+        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
         const SizedBox(height: 2),
         Text(
           value,

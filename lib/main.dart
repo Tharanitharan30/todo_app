@@ -27,9 +27,5 @@ Future<void> main() async {
     debugPrint('Notification initialization warning: $e');
   }
 
-  runApp(
-    const ProviderScope(
-      child: PersonalCommandCenterApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: PersonalCommandCenterApp()));
 }

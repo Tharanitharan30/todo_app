@@ -113,7 +113,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       final db = ref.read(databaseProvider);
       final allSettings = await db.getAllSettings();
       final Map<String, String> map = {
-        for (final s in allSettings) s.key: s.value
+        for (final s in allSettings) s.key: s.value,
       };
 
       bool parseBool(String key, bool defaultValue) {
@@ -161,20 +161,29 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
         lastBackupTime: parseDate(map['last_backup_time']),
         dailyBriefingEnabled: parseBool('daily_briefing_enabled', true),
         dailyBriefingTime: parseTime(
-            'daily_briefing_time', const TimeOfDay(hour: 7, minute: 30)),
+          'daily_briefing_time',
+          const TimeOfDay(hour: 7, minute: 30),
+        ),
         dailySummaryEnabled: parseBool('daily_summary_enabled', true),
         dailySummaryTime: parseTime(
-            'daily_summary_time', const TimeOfDay(hour: 20, minute: 0)),
+          'daily_summary_time',
+          const TimeOfDay(hour: 20, minute: 0),
+        ),
         taskRemindersEnabled: parseBool('task_reminders_enabled', true),
-        dueTaskNotificationsEnabled:
-            parseBool('due_task_notifications_enabled', true),
-        overdueNotificationsEnabled:
-            parseBool('overdue_notifications_enabled', true),
+        dueTaskNotificationsEnabled: parseBool(
+          'due_task_notifications_enabled',
+          true,
+        ),
+        overdueNotificationsEnabled: parseBool(
+          'overdue_notifications_enabled',
+          true,
+        ),
         budgetAlertsEnabled: parseBool('budget_alerts_enabled', true),
-        subscriptionAlertsEnabled:
-            parseBool('subscription_alerts_enabled', true),
-        expenseRemindersEnabled:
-            parseBool('expense_reminders_enabled', false),
+        subscriptionAlertsEnabled: parseBool(
+          'subscription_alerts_enabled',
+          true,
+        ),
+        expenseRemindersEnabled: parseBool('expense_reminders_enabled', false),
       );
     } catch (e) {
       debugPrint('Error loading app settings: $e');
@@ -203,38 +212,68 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       await db.setSetting('accent_color', newSettings.accentColor);
       await db.setSetting('currency', newSettings.currency);
       await db.setSetting(
-          'default_task_priority', newSettings.defaultTaskPriority);
+        'default_task_priority',
+        newSettings.defaultTaskPriority,
+      );
       await db.setSetting(
-          'default_task_category', newSettings.defaultTaskCategory);
+        'default_task_category',
+        newSettings.defaultTaskCategory,
+      );
       await db.setSetting(
-          'default_payment_method', newSettings.defaultPaymentMethod);
+        'default_payment_method',
+        newSettings.defaultPaymentMethod,
+      );
       await db.setSetting('week_starts_on', newSettings.weekStartsOn);
       await db.setSetting(
-          'auto_backup_enabled', newSettings.autoBackupEnabled.toString());
+        'auto_backup_enabled',
+        newSettings.autoBackupEnabled.toString(),
+      );
       if (newSettings.lastBackupTime != null) {
         await db.setSetting(
-            'last_backup_time', newSettings.lastBackupTime!.toIso8601String());
+          'last_backup_time',
+          newSettings.lastBackupTime!.toIso8601String(),
+        );
       }
       await db.setSetting(
-          'daily_briefing_enabled', newSettings.dailyBriefingEnabled.toString());
-      await db.setSetting('daily_briefing_time',
-          '${newSettings.dailyBriefingTime.hour}:${newSettings.dailyBriefingTime.minute}');
+        'daily_briefing_enabled',
+        newSettings.dailyBriefingEnabled.toString(),
+      );
       await db.setSetting(
-          'daily_summary_enabled', newSettings.dailySummaryEnabled.toString());
-      await db.setSetting('daily_summary_time',
-          '${newSettings.dailySummaryTime.hour}:${newSettings.dailySummaryTime.minute}');
+        'daily_briefing_time',
+        '${newSettings.dailyBriefingTime.hour}:${newSettings.dailyBriefingTime.minute}',
+      );
       await db.setSetting(
-          'task_reminders_enabled', newSettings.taskRemindersEnabled.toString());
-      await db.setSetting('due_task_notifications_enabled',
-          newSettings.dueTaskNotificationsEnabled.toString());
-      await db.setSetting('overdue_notifications_enabled',
-          newSettings.overdueNotificationsEnabled.toString());
+        'daily_summary_enabled',
+        newSettings.dailySummaryEnabled.toString(),
+      );
       await db.setSetting(
-          'budget_alerts_enabled', newSettings.budgetAlertsEnabled.toString());
-      await db.setSetting('subscription_alerts_enabled',
-          newSettings.subscriptionAlertsEnabled.toString());
-      await db.setSetting('expense_reminders_enabled',
-          newSettings.expenseRemindersEnabled.toString());
+        'daily_summary_time',
+        '${newSettings.dailySummaryTime.hour}:${newSettings.dailySummaryTime.minute}',
+      );
+      await db.setSetting(
+        'task_reminders_enabled',
+        newSettings.taskRemindersEnabled.toString(),
+      );
+      await db.setSetting(
+        'due_task_notifications_enabled',
+        newSettings.dueTaskNotificationsEnabled.toString(),
+      );
+      await db.setSetting(
+        'overdue_notifications_enabled',
+        newSettings.overdueNotificationsEnabled.toString(),
+      );
+      await db.setSetting(
+        'budget_alerts_enabled',
+        newSettings.budgetAlertsEnabled.toString(),
+      );
+      await db.setSetting(
+        'subscription_alerts_enabled',
+        newSettings.subscriptionAlertsEnabled.toString(),
+      );
+      await db.setSetting(
+        'expense_reminders_enabled',
+        newSettings.expenseRemindersEnabled.toString(),
+      );
     } catch (e) {
       debugPrint('Error saving app settings: $e');
     }
@@ -244,7 +283,8 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
 // Aliases for compatibility
 typedef NotificationSettings = AppSettings;
 
-final appSettingsProvider =
-    NotifierProvider<AppSettingsNotifier, AppSettings>(AppSettingsNotifier.new);
+final appSettingsProvider = NotifierProvider<AppSettingsNotifier, AppSettings>(
+  AppSettingsNotifier.new,
+);
 
 final notificationSettingsProvider = appSettingsProvider;

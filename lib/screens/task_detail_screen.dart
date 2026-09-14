@@ -10,10 +10,7 @@ import '../widgets/common_widgets.dart';
 class TaskDetailScreen extends ConsumerStatefulWidget {
   final int taskId;
 
-  const TaskDetailScreen({
-    super.key,
-    required this.taskId,
-  });
+  const TaskDetailScreen({super.key, required this.taskId});
 
   @override
   ConsumerState<TaskDetailScreen> createState() => _TaskDetailScreenState();
@@ -33,10 +30,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     if (title.isEmpty) return;
 
     await database.addSubtask(
-      SubtasksCompanion.insert(
-        taskId: widget.taskId,
-        title: title,
-      ),
+      SubtasksCompanion.insert(taskId: widget.taskId, title: title),
     );
     subtaskController.clear();
   }
@@ -101,7 +95,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     context: context,
                     builder: (ctx) => AlertDialog(
                       title: const Text('Delete Task'),
-                      content: const Text('Are you sure you want to delete this task?'),
+                      content: const Text(
+                        'Are you sure you want to delete this task?',
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
@@ -109,7 +105,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                         ),
                         FilledButton(
                           onPressed: () => Navigator.pop(ctx, true),
-                          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                           child: const Text('Delete'),
                         ),
                       ],
@@ -153,7 +151,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              decoration: completed ? TextDecoration.lineThrough : null,
+                              decoration: completed
+                                  ? TextDecoration.lineThrough
+                                  : null,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -175,16 +175,20 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
                 // Metadata cards
                 if (task.description.isNotEmpty) ...[
-                  const Text('Description',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    'Description',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   const SizedBox(height: 6),
                   Text(task.description, style: const TextStyle(fontSize: 15)),
                   const SizedBox(height: 16),
                 ],
 
                 if (task.notes.isNotEmpty) ...[
-                  const Text('Notes',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    'Notes',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   const SizedBox(height: 6),
                   Text(task.notes, style: const TextStyle(fontSize: 15)),
                   const SizedBox(height: 16),
@@ -235,8 +239,10 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
                 if (task.tags.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  const Text('Tags',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    'Tags',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 6,
@@ -244,10 +250,15 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                         .split(',')
                         .map((t) => t.trim())
                         .where((t) => t.isNotEmpty)
-                        .map((tag) => Chip(
-                              label: Text(tag, style: const TextStyle(fontSize: 12)),
-                              visualDensity: VisualDensity.compact,
-                            ))
+                        .map(
+                          (tag) => Chip(
+                            label: Text(
+                              tag,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        )
                         .toList(),
                   ),
                 ],
@@ -260,13 +271,19 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Subtasks',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    const Text(
+                      'Subtasks',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
                     subtasksAsync.when(
                       data: (subs) => Text(
                         '${subs.where((s) => s.completed).length} / ${subs.length} completed',
                         style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       loading: () => const SizedBox.shrink(),
                       error: (_, _) => const SizedBox.shrink(),
@@ -288,9 +305,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 8,
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
                         ),
                       ),
                     );
@@ -328,8 +345,10 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     if (subtasks.isEmpty) {
                       return const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text('No subtasks added yet.',
-                            style: TextStyle(fontStyle: FontStyle.italic)),
+                        child: Text(
+                          'No subtasks added yet.',
+                          style: TextStyle(fontStyle: FontStyle.italic),
+                        ),
                       );
                     }
                     return ListView.builder(
@@ -349,8 +368,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                           title: Text(
                             sub.title,
                             style: TextStyle(
-                              decoration:
-                                  sub.completed ? TextDecoration.lineThrough : null,
+                              decoration: sub.completed
+                                  ? TextDecoration.lineThrough
+                                  : null,
                             ),
                           ),
                           trailing: IconButton(
@@ -381,8 +401,14 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-            Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
+            ),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            ),
           ],
         ),
       ],

@@ -10,7 +10,11 @@ import '../providers/finance_provider.dart';
 class BudgetScreen extends ConsumerWidget {
   const BudgetScreen({super.key});
 
-  void _showAddEditBudgetDialog(BuildContext context, WidgetRef ref, [Budget? existing]) {
+  void _showAddEditBudgetDialog(
+    BuildContext context,
+    WidgetRef ref, [
+    Budget? existing,
+  ]) {
     final formKey = GlobalKey<FormState>();
     final amountController = TextEditingController(
       text: existing != null ? existing.amount.toString() : '',
@@ -38,10 +42,7 @@ class BudgetScreen extends ConsumerWidget {
                         border: OutlineInputBorder(),
                       ),
                       items: expenseCategories.map((cat) {
-                        return DropdownMenuItem(
-                          value: cat,
-                          child: Text(cat),
-                        );
+                        return DropdownMenuItem(value: cat, child: Text(cat));
                       }).toList(),
                       onChanged: (val) {
                         if (val != null) {
@@ -54,16 +55,22 @@ class BudgetScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       decoration: const InputDecoration(
                         labelText: 'Budget Amount (₹)',
                         prefixText: '₹ ',
                         border: OutlineInputBorder(),
                       ),
                       validator: (val) {
-                        if (val == null || val.trim().isEmpty) return 'Enter budget amount';
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Enter budget amount';
+                        }
                         final parsed = double.tryParse(val.trim());
-                        if (parsed == null || parsed <= 0) return 'Enter a valid amount > 0';
+                        if (parsed == null || parsed <= 0) {
+                          return 'Enter a valid amount > 0';
+                        }
                         return null;
                       },
                     ),
@@ -100,7 +107,9 @@ class BudgetScreen extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            existing == null ? 'Budget created' : 'Budget updated',
+                            existing == null
+                                ? 'Budget created'
+                                : 'Budget updated',
                           ),
                         ),
                       );
@@ -130,7 +139,11 @@ class BudgetScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _deleteBudget(BuildContext context, WidgetRef ref, Budget budget) async {
+  Future<void> _deleteBudget(
+    BuildContext context,
+    WidgetRef ref,
+    Budget budget,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -154,9 +167,9 @@ class BudgetScreen extends ConsumerWidget {
       final db = ref.read(databaseProvider);
       await db.deleteBudget(budget.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Budget deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Budget deleted')));
       }
     }
   }
@@ -185,7 +198,11 @@ class BudgetScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.pie_chart_outline, size: 64, color: Colors.grey),
+                  const Icon(
+                    Icons.pie_chart_outline,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     'No budgets set for this month',
@@ -258,7 +275,10 @@ class BudgetScreen extends ConsumerWidget {
                                 onSelected: (val) {
                                   if (val == 'edit') {
                                     _showAddEditBudgetDialog(
-                                        context, ref, info.budget);
+                                      context,
+                                      ref,
+                                      info.budget,
+                                    );
                                   } else if (val == 'delete') {
                                     _deleteBudget(context, ref, info.budget);
                                   }
@@ -270,8 +290,10 @@ class BudgetScreen extends ConsumerWidget {
                                   ),
                                   const PopupMenuItem(
                                     value: 'delete',
-                                    child: Text('Delete',
-                                        style: TextStyle(color: Colors.red)),
+                                    child: Text(
+                                      'Delete',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   ),
                                 ],
                               ),

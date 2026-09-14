@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class PriorityChip extends StatelessWidget {
   final String priority;
 
-  const PriorityChip({
-    super.key,
-    required this.priority,
-  });
+  const PriorityChip({super.key, required this.priority});
 
   @override
   Widget build(BuildContext context) {
@@ -49,10 +46,7 @@ class PriorityChip extends StatelessWidget {
 class CategoryBadge extends StatelessWidget {
   final String category;
 
-  const CategoryBadge({
-    super.key,
-    required this.category,
-  });
+  const CategoryBadge({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {

@@ -4,19 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database.dart';
 import 'database_provider.dart';
 
-enum FinanceDateFilter {
-  today,
-  thisWeek,
-  thisMonth,
-  lastMonth,
-  customRange,
-}
+enum FinanceDateFilter { today, thisWeek, thisMonth, lastMonth, customRange }
 
-enum TrendPeriod {
-  daily,
-  weekly,
-  monthly,
-}
+enum TrendPeriod { daily, weekly, monthly }
 
 const List<String> expenseCategories = [
   'Food',
@@ -166,23 +156,28 @@ class SpendingTrendPeriodNotifier extends Notifier<TrendPeriod> {
 
 final financeDateFilterProvider =
     NotifierProvider<FinanceDateFilterNotifier, FinanceDateFilter>(
-        FinanceDateFilterNotifier.new);
+      FinanceDateFilterNotifier.new,
+    );
 
 final financeCustomDateRangeProvider =
     NotifierProvider<FinanceCustomDateRangeNotifier, DateTimeRange?>(
-        FinanceCustomDateRangeNotifier.new);
+      FinanceCustomDateRangeNotifier.new,
+    );
 
 final financeCategoryFilterProvider =
     NotifierProvider<FinanceCategoryFilterNotifier, String>(
-        FinanceCategoryFilterNotifier.new);
+      FinanceCategoryFilterNotifier.new,
+    );
 
 final financeSearchQueryProvider =
     NotifierProvider<FinanceSearchQueryNotifier, String>(
-        FinanceSearchQueryNotifier.new);
+      FinanceSearchQueryNotifier.new,
+    );
 
 final spendingTrendPeriodProvider =
     NotifierProvider<SpendingTrendPeriodNotifier, TrendPeriod>(
-        SpendingTrendPeriodNotifier.new);
+      SpendingTrendPeriodNotifier.new,
+    );
 
 // ----------------------------------------------------
 // Helper Function for Date Filtering
@@ -199,7 +194,9 @@ bool _isDateInFilter(
 
   switch (filter) {
     case FinanceDateFilter.today:
-      return date.isAfter(todayStart.subtract(const Duration(milliseconds: 1))) &&
+      return date.isAfter(
+            todayStart.subtract(const Duration(milliseconds: 1)),
+          ) &&
           date.isBefore(todayEnd.add(const Duration(milliseconds: 1)));
 
     case FinanceDateFilter.thisWeek:
@@ -207,29 +204,46 @@ bool _isDateInFilter(
       final weekEnd = weekStart
           .add(const Duration(days: 7))
           .subtract(const Duration(milliseconds: 1));
-      return date.isAfter(weekStart.subtract(const Duration(milliseconds: 1))) &&
+      return date.isAfter(
+            weekStart.subtract(const Duration(milliseconds: 1)),
+          ) &&
           date.isBefore(weekEnd.add(const Duration(milliseconds: 1)));
 
     case FinanceDateFilter.thisMonth:
       final monthStart = DateTime(now.year, now.month, 1);
       final monthEnd = DateTime(now.year, now.month + 1, 0, 23, 59, 59, 999);
-      return date.isAfter(monthStart.subtract(const Duration(milliseconds: 1))) &&
+      return date.isAfter(
+            monthStart.subtract(const Duration(milliseconds: 1)),
+          ) &&
           date.isBefore(monthEnd.add(const Duration(milliseconds: 1)));
 
     case FinanceDateFilter.lastMonth:
       final lastMonthStart = DateTime(now.year, now.month - 1, 1);
       final lastMonthEnd = DateTime(now.year, now.month, 0, 23, 59, 59, 999);
-      return date
-              .isAfter(lastMonthStart.subtract(const Duration(milliseconds: 1))) &&
+      return date.isAfter(
+            lastMonthStart.subtract(const Duration(milliseconds: 1)),
+          ) &&
           date.isBefore(lastMonthEnd.add(const Duration(milliseconds: 1)));
 
     case FinanceDateFilter.customRange:
       if (customRange == null) return true;
       final rangeStart = DateTime(
-          customRange.start.year, customRange.start.month, customRange.start.day);
+        customRange.start.year,
+        customRange.start.month,
+        customRange.start.day,
+      );
       final rangeEnd = DateTime(
-          customRange.end.year, customRange.end.month, customRange.end.day, 23, 59, 59, 999);
-      return date.isAfter(rangeStart.subtract(const Duration(milliseconds: 1))) &&
+        customRange.end.year,
+        customRange.end.month,
+        customRange.end.day,
+        23,
+        59,
+        59,
+        999,
+      );
+      return date.isAfter(
+            rangeStart.subtract(const Duration(milliseconds: 1)),
+          ) &&
           date.isBefore(rangeEnd.add(const Duration(milliseconds: 1)));
   }
 }
@@ -240,91 +254,97 @@ bool _isDateInFilter(
 
 final filteredTransactionsProvider =
     Provider<AsyncValue<List<TransactionItem>>>((ref) {
-  final expensesAsync = ref.watch(expensesStreamProvider);
-  final incomeAsync = ref.watch(incomeStreamProvider);
+      final expensesAsync = ref.watch(expensesStreamProvider);
+      final incomeAsync = ref.watch(incomeStreamProvider);
 
-  final dateFilter = ref.watch(financeDateFilterProvider);
-  final customRange = ref.watch(financeCustomDateRangeProvider);
-  final categoryFilter = ref.watch(financeCategoryFilterProvider);
-  final searchQuery = ref.watch(financeSearchQueryProvider).trim().toLowerCase();
+      final dateFilter = ref.watch(financeDateFilterProvider);
+      final customRange = ref.watch(financeCustomDateRangeProvider);
+      final categoryFilter = ref.watch(financeCategoryFilterProvider);
+      final searchQuery = ref
+          .watch(financeSearchQueryProvider)
+          .trim()
+          .toLowerCase();
 
-  if (expensesAsync.isLoading || incomeAsync.isLoading) {
-    return const AsyncValue.loading();
-  }
-
-  if (expensesAsync.hasError) {
-    return AsyncValue.error(expensesAsync.error!, expensesAsync.stackTrace!);
-  }
-
-  if (incomeAsync.hasError) {
-    return AsyncValue.error(incomeAsync.error!, incomeAsync.stackTrace!);
-  }
-
-  final expenses = expensesAsync.value ?? [];
-  final incomes = incomeAsync.value ?? [];
-
-  List<TransactionItem> items = [];
-
-  for (final exp in expenses) {
-    items.add(
-      TransactionItem(
-        id: exp.id,
-        isIncome: false,
-        amount: exp.amount,
-        title: exp.category,
-        note: exp.note,
-        date: exp.date,
-        paymentMethod: exp.paymentMethod,
-        isRecurring: exp.isRecurring,
-        rawItem: exp,
-      ),
-    );
-  }
-
-  for (final inc in incomes) {
-    items.add(
-      TransactionItem(
-        id: inc.id,
-        isIncome: true,
-        amount: inc.amount,
-        title: inc.source,
-        note: inc.note,
-        date: inc.date,
-        isRecurring: inc.isRecurring,
-        rawItem: inc,
-      ),
-    );
-  }
-
-  // 1. Date Filter
-  items = items
-      .where((item) => _isDateInFilter(item.date, dateFilter, customRange))
-      .toList();
-
-  // 2. Category Filter
-  if (categoryFilter != 'All') {
-    items = items.where((item) {
-      if (!item.isIncome) {
-        return item.title.toLowerCase() == categoryFilter.toLowerCase();
+      if (expensesAsync.isLoading || incomeAsync.isLoading) {
+        return const AsyncValue.loading();
       }
-      return false;
-    }).toList();
-  }
 
-  // 3. Search Query (category, note, income source)
-  if (searchQuery.isNotEmpty) {
-    items = items.where((item) {
-      final titleMatch = item.title.toLowerCase().contains(searchQuery);
-      final noteMatch = item.note.toLowerCase().contains(searchQuery);
-      return titleMatch || noteMatch;
-    }).toList();
-  }
+      if (expensesAsync.hasError) {
+        return AsyncValue.error(
+          expensesAsync.error!,
+          expensesAsync.stackTrace!,
+        );
+      }
 
-  // Sort descending by date
-  items.sort((a, b) => b.date.compareTo(a.date));
+      if (incomeAsync.hasError) {
+        return AsyncValue.error(incomeAsync.error!, incomeAsync.stackTrace!);
+      }
 
-  return AsyncValue.data(items);
-});
+      final expenses = expensesAsync.value ?? [];
+      final incomes = incomeAsync.value ?? [];
+
+      List<TransactionItem> items = [];
+
+      for (final exp in expenses) {
+        items.add(
+          TransactionItem(
+            id: exp.id,
+            isIncome: false,
+            amount: exp.amount,
+            title: exp.category,
+            note: exp.note,
+            date: exp.date,
+            paymentMethod: exp.paymentMethod,
+            isRecurring: exp.isRecurring,
+            rawItem: exp,
+          ),
+        );
+      }
+
+      for (final inc in incomes) {
+        items.add(
+          TransactionItem(
+            id: inc.id,
+            isIncome: true,
+            amount: inc.amount,
+            title: inc.source,
+            note: inc.note,
+            date: inc.date,
+            isRecurring: inc.isRecurring,
+            rawItem: inc,
+          ),
+        );
+      }
+
+      // 1. Date Filter
+      items = items
+          .where((item) => _isDateInFilter(item.date, dateFilter, customRange))
+          .toList();
+
+      // 2. Category Filter
+      if (categoryFilter != 'All') {
+        items = items.where((item) {
+          if (!item.isIncome) {
+            return item.title.toLowerCase() == categoryFilter.toLowerCase();
+          }
+          return false;
+        }).toList();
+      }
+
+      // 3. Search Query (category, note, income source)
+      if (searchQuery.isNotEmpty) {
+        items = items.where((item) {
+          final titleMatch = item.title.toLowerCase().contains(searchQuery);
+          final noteMatch = item.note.toLowerCase().contains(searchQuery);
+          return titleMatch || noteMatch;
+        }).toList();
+      }
+
+      // Sort descending by date
+      items.sort((a, b) => b.date.compareTo(a.date));
+
+      return AsyncValue.data(items);
+    });
 
 final financeSummaryProvider = Provider<AsyncValue<FinanceSummary>>((ref) {
   final filteredAsync = ref.watch(filteredTransactionsProvider);
@@ -342,8 +362,9 @@ final financeSummaryProvider = Provider<AsyncValue<FinanceSummary>>((ref) {
     }
 
     final balance = totalIncome - totalExpenses;
-    final savingsRate =
-        totalIncome <= 0 ? 0.0 : ((totalIncome - totalExpenses) / totalIncome) * 100;
+    final savingsRate = totalIncome <= 0
+        ? 0.0
+        : ((totalIncome - totalExpenses) / totalIncome) * 100;
 
     return FinanceSummary(
       income: totalIncome,
@@ -354,7 +375,9 @@ final financeSummaryProvider = Provider<AsyncValue<FinanceSummary>>((ref) {
   });
 });
 
-final categorySpendingProvider = Provider<AsyncValue<Map<String, double>>>((ref) {
+final categorySpendingProvider = Provider<AsyncValue<Map<String, double>>>((
+  ref,
+) {
   final filteredAsync = ref.watch(filteredTransactionsProvider);
 
   return filteredAsync.whenData((items) {
@@ -370,7 +393,9 @@ final categorySpendingProvider = Provider<AsyncValue<Map<String, double>>>((ref)
   });
 });
 
-final spendingTrendDataProvider = Provider<AsyncValue<List<TrendDataPoint>>>((ref) {
+final spendingTrendDataProvider = Provider<AsyncValue<List<TrendDataPoint>>>((
+  ref,
+) {
   final expensesAsync = ref.watch(expensesStreamProvider);
   final period = ref.watch(spendingTrendPeriodProvider);
 
@@ -386,9 +411,13 @@ final spendingTrendDataProvider = Provider<AsyncValue<List<TrendDataPoint>>>((re
         final dayEnd = DateTime(d.year, d.month, d.day, 23, 59, 59, 999);
 
         final total = expenses
-            .where((e) =>
-                e.date.isAfter(dayStart.subtract(const Duration(milliseconds: 1))) &&
-                e.date.isBefore(dayEnd.add(const Duration(milliseconds: 1))))
+            .where(
+              (e) =>
+                  e.date.isAfter(
+                    dayStart.subtract(const Duration(milliseconds: 1)),
+                  ) &&
+                  e.date.isBefore(dayEnd.add(const Duration(milliseconds: 1))),
+            )
             .fold(0.0, (sum, e) => sum + e.amount);
 
         const weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -403,13 +432,17 @@ final spendingTrendDataProvider = Provider<AsyncValue<List<TrendDataPoint>>>((re
         final weekStart = weekEnd.subtract(const Duration(days: 6));
 
         final total = expenses
-            .where((e) =>
-                e.date.isAfter(weekStart.subtract(const Duration(days: 1))) &&
-                e.date.isBefore(weekEnd.add(const Duration(days: 1))))
+            .where(
+              (e) =>
+                  e.date.isAfter(weekStart.subtract(const Duration(days: 1))) &&
+                  e.date.isBefore(weekEnd.add(const Duration(days: 1))),
+            )
             .fold(0.0, (sum, e) => sum + e.amount);
 
         final label = 'W${4 - i}';
-        result.add(TrendDataPoint(label: label, amount: total, date: weekStart));
+        result.add(
+          TrendDataPoint(label: label, amount: total, date: weekStart),
+        );
       }
     } else {
       // Monthly (Last 6 months)
@@ -419,9 +452,13 @@ final spendingTrendDataProvider = Provider<AsyncValue<List<TrendDataPoint>>>((re
         final mEnd = DateTime(mDate.year, mDate.month + 1, 0, 23, 59, 59, 999);
 
         final total = expenses
-            .where((e) =>
-                e.date.isAfter(mStart.subtract(const Duration(milliseconds: 1))) &&
-                e.date.isBefore(mEnd.add(const Duration(milliseconds: 1))))
+            .where(
+              (e) =>
+                  e.date.isAfter(
+                    mStart.subtract(const Duration(milliseconds: 1)),
+                  ) &&
+                  e.date.isBefore(mEnd.add(const Duration(milliseconds: 1))),
+            )
             .fold(0.0, (sum, e) => sum + e.amount);
 
         const monthNames = [
@@ -436,7 +473,7 @@ final spendingTrendDataProvider = Provider<AsyncValue<List<TrendDataPoint>>>((re
           'Sep',
           'Oct',
           'Nov',
-          'Dec'
+          'Dec',
         ];
         final label = monthNames[mDate.month - 1];
 
@@ -450,60 +487,68 @@ final spendingTrendDataProvider = Provider<AsyncValue<List<TrendDataPoint>>>((re
 
 final incomeVsExpenseMonthlyProvider =
     Provider<AsyncValue<List<MonthlyComparison>>>((ref) {
-  final expensesAsync = ref.watch(expensesStreamProvider);
-  final incomeAsync = ref.watch(incomeStreamProvider);
+      final expensesAsync = ref.watch(expensesStreamProvider);
+      final incomeAsync = ref.watch(incomeStreamProvider);
 
-  if (expensesAsync.isLoading || incomeAsync.isLoading) {
-    return const AsyncValue.loading();
-  }
+      if (expensesAsync.isLoading || incomeAsync.isLoading) {
+        return const AsyncValue.loading();
+      }
 
-  final expenses = expensesAsync.value ?? [];
-  final incomes = incomeAsync.value ?? [];
-  final now = DateTime.now();
+      final expenses = expensesAsync.value ?? [];
+      final incomes = incomeAsync.value ?? [];
+      final now = DateTime.now();
 
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec'
-  ];
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
 
-  List<MonthlyComparison> result = [];
+      List<MonthlyComparison> result = [];
 
-  for (int i = 5; i >= 0; i--) {
-    final mDate = DateTime(now.year, now.month - i, 1);
-    final mStart = DateTime(mDate.year, mDate.month, 1);
-    final mEnd = DateTime(mDate.year, mDate.month + 1, 0, 23, 59, 59, 999);
+      for (int i = 5; i >= 0; i--) {
+        final mDate = DateTime(now.year, now.month - i, 1);
+        final mStart = DateTime(mDate.year, mDate.month, 1);
+        final mEnd = DateTime(mDate.year, mDate.month + 1, 0, 23, 59, 59, 999);
 
-    final expTotal = expenses
-        .where((e) =>
-            e.date.isAfter(mStart.subtract(const Duration(milliseconds: 1))) &&
-            e.date.isBefore(mEnd.add(const Duration(milliseconds: 1))))
-        .fold(0.0, (sum, e) => sum + e.amount);
+        final expTotal = expenses
+            .where(
+              (e) =>
+                  e.date.isAfter(
+                    mStart.subtract(const Duration(milliseconds: 1)),
+                  ) &&
+                  e.date.isBefore(mEnd.add(const Duration(milliseconds: 1))),
+            )
+            .fold(0.0, (sum, e) => sum + e.amount);
 
-    final incTotal = incomes
-        .where((inc) =>
-            inc.date.isAfter(mStart.subtract(const Duration(milliseconds: 1))) &&
-            inc.date.isBefore(mEnd.add(const Duration(milliseconds: 1))))
-        .fold(0.0, (sum, inc) => sum + inc.amount);
+        final incTotal = incomes
+            .where(
+              (inc) =>
+                  inc.date.isAfter(
+                    mStart.subtract(const Duration(milliseconds: 1)),
+                  ) &&
+                  inc.date.isBefore(mEnd.add(const Duration(milliseconds: 1))),
+            )
+            .fold(0.0, (sum, inc) => sum + inc.amount);
 
-    final label = '${monthNames[mDate.month - 1]} ${mDate.year % 100}';
-    result.add(
-      MonthlyComparison(
-        monthLabel: label,
-        income: incTotal,
-        expense: expTotal,
-      ),
-    );
-  }
+        final label = '${monthNames[mDate.month - 1]} ${mDate.year % 100}';
+        result.add(
+          MonthlyComparison(
+            monthLabel: label,
+            income: incTotal,
+            expense: expTotal,
+          ),
+        );
+      }
 
-  return AsyncValue.data(result);
-});
+      return AsyncValue.data(result);
+    });

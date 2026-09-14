@@ -3,22 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database.dart';
 import 'database_provider.dart';
 
-enum TaskFilter {
-  all,
-  pending,
-  completed,
-  important,
-  overdue,
-  today,
-  upcoming,
-}
+enum TaskFilter { all, pending, completed, important, overdue, today, upcoming }
 
-enum TaskSort {
-  dueDate,
-  priority,
-  createdDate,
-  alphabetical,
-}
+enum TaskSort { dueDate, priority, createdDate, alphabetical }
 
 class SearchQueryNotifier extends Notifier<String> {
   @override
@@ -51,20 +38,25 @@ final subtasksProvider = StreamProvider<List<Subtask>>((ref) {
   return database.watchAllSubtasks();
 });
 
-final subtasksForTaskProvider =
-    StreamProvider.family<List<Subtask>, int>((ref, taskId) {
+final subtasksForTaskProvider = StreamProvider.family<List<Subtask>, int>((
+  ref,
+  taskId,
+) {
   final database = ref.watch(databaseProvider);
   return database.watchSubtasksForTask(taskId);
 });
 
-final taskSearchQueryProvider =
-    NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
+final taskSearchQueryProvider = NotifierProvider<SearchQueryNotifier, String>(
+  SearchQueryNotifier.new,
+);
 
-final taskFilterProvider =
-    NotifierProvider<TaskFilterNotifier, TaskFilter>(TaskFilterNotifier.new);
+final taskFilterProvider = NotifierProvider<TaskFilterNotifier, TaskFilter>(
+  TaskFilterNotifier.new,
+);
 
-final taskSortProvider =
-    NotifierProvider<TaskSortNotifier, TaskSort>(TaskSortNotifier.new);
+final taskSortProvider = NotifierProvider<TaskSortNotifier, TaskSort>(
+  TaskSortNotifier.new,
+);
 
 final filteredTasksProvider = Provider<AsyncValue<List<Task>>>((ref) {
   final tasksAsync = ref.watch(tasksProvider);
@@ -106,7 +98,9 @@ final filteredTasksProvider = Provider<AsyncValue<List<Task>>>((ref) {
           return taskDateTime.isBefore(now);
         case TaskFilter.today:
           if (task.dueDate == null) return false;
-          return task.dueDate!.isAfter(todayStart.subtract(const Duration(seconds: 1))) &&
+          return task.dueDate!.isAfter(
+                todayStart.subtract(const Duration(seconds: 1)),
+              ) &&
               task.dueDate!.isBefore(todayEnd.add(const Duration(seconds: 1)));
         case TaskFilter.upcoming:
           if (task.dueDate == null) return false;
@@ -146,11 +140,5 @@ final filteredTasksProvider = Provider<AsyncValue<List<Task>>>((ref) {
 DateTime _combineDateTime(DateTime? date, DateTime? time) {
   if (date == null) return DateTime.now();
   if (time == null) return date;
-  return DateTime(
-    date.year,
-    date.month,
-    date.day,
-    time.hour,
-    time.minute,
-  );
+  return DateTime(date.year, date.month, date.day, time.hour, time.minute);
 }

@@ -252,21 +252,24 @@ class KeyHighlightsCard extends ConsumerWidget {
             AnalyticsStatTile(
               title: 'Highest Spending',
               value: highlights.highestSpendingCategory,
-              subtitle: '₹${highlights.highestSpendingAmount.toStringAsFixed(0)} (${highlights.highestSpendingPercentage.toStringAsFixed(0)}%)',
+              subtitle:
+                  '₹${highlights.highestSpendingAmount.toStringAsFixed(0)} (${highlights.highestSpendingPercentage.toStringAsFixed(0)}%)',
               icon: Icons.shopping_bag_outlined,
               color: Colors.deepOrange,
             ),
             AnalyticsStatTile(
               title: 'Most Productive Category',
               value: highlights.mostProductiveCategory,
-              subtitle: '${highlights.mostProductiveCategoryCount} completed tasks',
+              subtitle:
+                  '${highlights.mostProductiveCategoryCount} completed tasks',
               icon: Icons.category_outlined,
               color: Colors.indigo,
             ),
             AnalyticsStatTile(
               title: 'Best Day',
               value: highlights.bestProductivityDay,
-              subtitle: '${highlights.bestProductivityDayCount} completed tasks',
+              subtitle:
+                  '${highlights.bestProductivityDayCount} completed tasks',
               icon: Icons.event_available_outlined,
               color: Colors.purple,
             ),
@@ -279,7 +282,8 @@ class KeyHighlightsCard extends ConsumerWidget {
             ),
             AnalyticsStatTile(
               title: 'Avg Task Completion',
-              value: '${overview.avgCompletedPerDay.toStringAsFixed(1)} tasks/day',
+              value:
+                  '${overview.avgCompletedPerDay.toStringAsFixed(1)} tasks/day',
               subtitle: 'Calendar average',
               icon: Icons.speed_outlined,
               color: Colors.amber[800]!,

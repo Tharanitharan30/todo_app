@@ -35,8 +35,9 @@ class TasksScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final allTasksAsync = ref.watch(tasksProvider);
     final filteredTasksAsync = ref.watch(filteredTasksProvider);
-    final searchController =
-        TextEditingController(text: ref.watch(taskSearchQueryProvider));
+    final searchController = TextEditingController(
+      text: ref.watch(taskSearchQueryProvider),
+    );
 
     final currentFilter = ref.watch(taskFilterProvider);
     final currentSort = ref.watch(taskSortProvider);
@@ -46,16 +47,15 @@ class TasksScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Tasks',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            const Text('Tasks', style: TextStyle(fontWeight: FontWeight.bold)),
             allTasksAsync.when(
               data: (allTasks) {
-                final pendingCount =
-                    allTasks.where((t) => t.status != 'completed').length;
-                final completedCount =
-                    allTasks.where((t) => t.status == 'completed').length;
+                final pendingCount = allTasks
+                    .where((t) => t.status != 'completed')
+                    .length;
+                final completedCount = allTasks
+                    .where((t) => t.status == 'completed')
+                    .length;
                 return Text(
                   '$pendingCount pending • $completedCount completed',
                   style: const TextStyle(
@@ -118,7 +118,9 @@ class TasksScreen extends ConsumerWidget {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           searchController.clear();
-                          ref.read(taskSearchQueryProvider.notifier).setQuery('');
+                          ref
+                              .read(taskSearchQueryProvider.notifier)
+                              .setQuery('');
                         },
                       )
                     : null,
@@ -193,11 +195,18 @@ class TasksScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
+                      ),
                       const SizedBox(height: 16),
                       const Text(
                         'Database Error',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text('$error', textAlign: TextAlign.center),
@@ -255,11 +264,7 @@ class TasksScreen extends ConsumerWidget {
                       return TaskCard(
                         task: task,
                         onComplete: () {
-                          toggleTask(
-                            ref,
-                            task.id,
-                            task.status == 'completed',
-                          );
+                          toggleTask(ref, task.id, task.status == 'completed');
                         },
                         onDelete: () {
                           deleteTask(ref, task.id);

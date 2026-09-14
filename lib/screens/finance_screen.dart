@@ -37,17 +37,11 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
   }
 
   void _openAddExpense() {
-    showDialog(
-      context: context,
-      builder: (_) => const AddExpenseDialog(),
-    );
+    showDialog(context: context, builder: (_) => const AddExpenseDialog());
   }
 
   void _openAddIncome() {
-    showDialog(
-      context: context,
-      builder: (_) => const AddIncomeDialog(),
-    );
+    showDialog(context: context, builder: (_) => const AddIncomeDialog());
   }
 
   @override
@@ -94,9 +88,7 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
       child: CustomScrollView(
         slivers: [
           // 1. Finance Summary Header
-          const SliverToBoxAdapter(
-            child: FinanceSummaryCard(),
-          ),
+          const SliverToBoxAdapter(child: FinanceSummaryCard()),
 
           // 2. Action Buttons (+ Expense, + Income)
           SliverToBoxAdapter(
@@ -112,7 +104,10 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
                         side: const BorderSide(color: Colors.red),
                       ),
                       onPressed: _openAddExpense,
-                      icon: const Icon(Icons.add_circle_outline, color: Colors.red),
+                      icon: const Icon(
+                        Icons.add_circle_outline,
+                        color: Colors.red,
+                      ),
                       label: const Text(
                         '+ Expense',
                         style: TextStyle(fontWeight: FontWeight.bold),
@@ -128,7 +123,10 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
                         side: const BorderSide(color: Colors.green),
                       ),
                       onPressed: _openAddIncome,
-                      icon: const Icon(Icons.add_circle_outline, color: Colors.green),
+                      icon: const Icon(
+                        Icons.add_circle_outline,
+                        color: Colors.green,
+                      ),
                       label: const Text(
                         '+ Income',
                         style: TextStyle(fontWeight: FontWeight.bold),
@@ -163,7 +161,10 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
                 onChanged: (val) {
                   ref.read(financeSearchQueryProvider.notifier).setQuery(val);
@@ -179,7 +180,8 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: categories.map((cat) {
-                  final isSelected = activeCategory.toLowerCase() == cat.toLowerCase();
+                  final isSelected =
+                      activeCategory.toLowerCase() == cat.toLowerCase();
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: FilterChip(
@@ -203,10 +205,7 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
               padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(
                 'Recent Transactions',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -232,8 +231,11 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.receipt_long_outlined,
-                              size: 64, color: Colors.grey),
+                          Icon(
+                            Icons.receipt_long_outlined,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
                           SizedBox(height: 16),
                           Text(
                             'No transactions found for selected period',
@@ -250,17 +252,24 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
               final Map<String, List<TransactionItem>> grouped = {};
               final now = DateTime.now();
               final todayStart = DateTime(now.year, now.month, now.day);
-              final yesterdayStart = todayStart.subtract(const Duration(days: 1));
+              final yesterdayStart = todayStart.subtract(
+                const Duration(days: 1),
+              );
 
               for (final item in items) {
-                final itemDateStart = DateTime(item.date.year, item.date.month, item.date.day);
+                final itemDateStart = DateTime(
+                  item.date.year,
+                  item.date.month,
+                  item.date.day,
+                );
                 String header;
                 if (itemDateStart == todayStart) {
                   header = 'Today';
                 } else if (itemDateStart == yesterdayStart) {
                   header = 'Yesterday';
                 } else {
-                  header = '${item.date.day}/${item.date.month}/${item.date.year}';
+                  header =
+                      '${item.date.day}/${item.date.month}/${item.date.year}';
                 }
                 grouped.putIfAbsent(header, () => []).add(item);
               }
@@ -268,36 +277,31 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
               final entries = grouped.entries.toList();
 
               return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final entry = entries[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                          child: Text(
-                            entry.key,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[700],
-                            ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final entry = entries[index];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                        child: Text(
+                          entry.key,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[700],
                           ),
                         ),
-                        ...entry.value.map((item) => TransactionCard(item: item)),
-                      ],
-                    );
-                  },
-                  childCount: entries.length,
-                ),
+                      ),
+                      ...entry.value.map((item) => TransactionCard(item: item)),
+                    ],
+                  );
+                }, childCount: entries.length),
               );
             },
           ),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 80),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
       ),
     );

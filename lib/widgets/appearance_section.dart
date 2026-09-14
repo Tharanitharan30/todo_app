@@ -59,9 +59,9 @@ class AppearanceSection extends ConsumerWidget {
               selected: {settings.themeMode},
               onSelectionChanged: (newSelection) {
                 final newMode = newSelection.first;
-                ref.read(appSettingsProvider.notifier).updateSettings(
-                      settings.copyWith(themeMode: newMode),
-                    );
+                ref
+                    .read(appSettingsProvider.notifier)
+                    .updateSettings(settings.copyWith(themeMode: newMode));
               },
             ),
             const SizedBox(height: 20),
@@ -80,14 +80,16 @@ class AppearanceSection extends ConsumerWidget {
 
                 return InkWell(
                   onTap: () {
-                    ref.read(appSettingsProvider.notifier).updateSettings(
-                          settings.copyWith(accentColor: name),
-                        );
+                    ref
+                        .read(appSettingsProvider.notifier)
+                        .updateSettings(settings.copyWith(accentColor: name));
                   },
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? color.withValues(alpha: 0.15)
@@ -104,7 +106,8 @@ class AppearanceSection extends ConsumerWidget {
                           width: 16,
                           height: 16,
                           decoration: BoxDecoration(
-                            color: color == Colors.black &&
+                            color:
+                                color == Colors.black &&
                                     theme.brightness == Brightness.dark
                                 ? Colors.white
                                 : color,

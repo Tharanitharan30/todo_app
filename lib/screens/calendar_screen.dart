@@ -29,18 +29,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendar', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Calendar',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           SegmentedButton<CalendarViewMode>(
             segments: const [
-              ButtonSegment(
-                value: CalendarViewMode.day,
-                label: Text('Day'),
-              ),
-              ButtonSegment(
-                value: CalendarViewMode.week,
-                label: Text('Week'),
-              ),
+              ButtonSegment(value: CalendarViewMode.day, label: Text('Day')),
+              ButtonSegment(value: CalendarViewMode.week, label: Text('Week')),
               ButtonSegment(
                 value: CalendarViewMode.month,
                 label: Text('Month'),
@@ -60,8 +57,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error: $err')),
         data: (tasks) {
-          final tasksWithDueDate =
-              tasks.where((t) => t.dueDate != null).toList();
+          final tasksWithDueDate = tasks
+              .where((t) => t.dueDate != null)
+              .toList();
 
           return Column(
             children: [
@@ -72,20 +70,25 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
               // Selected date header
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Tasks for ${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
                       style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       '${_getTasksForSelectedDate(tasksWithDueDate).length} tasks',
                       style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -93,7 +96,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
               // Tasks list for selected date
               Expanded(
-                child: _buildTaskList(_getTasksForSelectedDate(tasksWithDueDate)),
+                child: _buildTaskList(
+                  _getTasksForSelectedDate(tasksWithDueDate),
+                ),
               ),
             ],
           );
@@ -109,19 +114,28 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             .where((t) => _isSameDay(t.dueDate!, selectedDate))
             .toList();
       case CalendarViewMode.week:
-        final startOfWeek =
-            selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
-        final endOfWeek = startOfWeek.add(const Duration(days: 6, hours: 23, minutes: 59));
+        final startOfWeek = selectedDate.subtract(
+          Duration(days: selectedDate.weekday - 1),
+        );
+        final endOfWeek = startOfWeek.add(
+          const Duration(days: 6, hours: 23, minutes: 59),
+        );
         return tasksWithDueDate
-            .where((t) =>
-                t.dueDate!.isAfter(startOfWeek.subtract(const Duration(seconds: 1))) &&
-                t.dueDate!.isBefore(endOfWeek))
+            .where(
+              (t) =>
+                  t.dueDate!.isAfter(
+                    startOfWeek.subtract(const Duration(seconds: 1)),
+                  ) &&
+                  t.dueDate!.isBefore(endOfWeek),
+            )
             .toList();
       case CalendarViewMode.month:
         return tasksWithDueDate
-            .where((t) =>
-                t.dueDate!.year == selectedDate.year &&
-                t.dueDate!.month == selectedDate.month)
+            .where(
+              (t) =>
+                  t.dueDate!.year == selectedDate.year &&
+                  t.dueDate!.month == selectedDate.month,
+            )
             .toList();
     }
   }
@@ -142,7 +156,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 } else if (viewMode == CalendarViewMode.week) {
                   selectedDate = selectedDate.subtract(const Duration(days: 7));
                 } else {
-                  selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, 1);
+                  selectedDate = DateTime(
+                    selectedDate.year,
+                    selectedDate.month - 1,
+                    1,
+                  );
                 }
               });
             },
@@ -169,7 +187,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   const SizedBox(width: 8),
                   Text(
                     '${_getMonthName(selectedDate.month)} ${selectedDate.year}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -184,7 +205,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 } else if (viewMode == CalendarViewMode.week) {
                   selectedDate = selectedDate.add(const Duration(days: 7));
                 } else {
-                  selectedDate = DateTime(selectedDate.year, selectedDate.month + 1, 1);
+                  selectedDate = DateTime(
+                    selectedDate.year,
+                    selectedDate.month + 1,
+                    1,
+                  );
                 }
               });
             },
@@ -207,7 +232,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       'September',
       'October',
       'November',
-      'December'
+      'December',
     ];
     return names[month - 1];
   }

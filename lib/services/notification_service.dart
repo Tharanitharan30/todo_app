@@ -31,8 +31,9 @@ class NotificationService {
     try {
       tz.initializeTimeZones();
 
-      const androidSettings =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
       const linuxSettings = LinuxInitializationSettings(
         defaultActionName: 'Open notification',
       );
@@ -62,9 +63,10 @@ class NotificationService {
   Future<void> requestPermissions() async {
     if (!_initialized) await init();
     try {
-      final androidImplementation =
-          _notificationsPlugin.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      final androidImplementation = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (androidImplementation != null) {
         await androidImplementation.requestNotificationsPermission();
       }
@@ -342,16 +344,38 @@ class NotificationService {
         final tasks = await db.getAllTasks();
         final now = DateTime.now();
         final todayStart = DateTime(now.year, now.month, now.day);
-        final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+        final todayEnd = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          23,
+          59,
+          59,
+          999,
+        );
 
-        final todayTasks = tasks.where((t) =>
-            t.dueDate != null &&
-            t.dueDate!.isAfter(todayStart.subtract(const Duration(milliseconds: 1))) &&
-            t.dueDate!.isBefore(todayEnd.add(const Duration(milliseconds: 1)))).toList();
-        final highPriority = todayTasks.where((t) => t.priority == 'urgent' || t.priority == 'high').length;
+        final todayTasks = tasks
+            .where(
+              (t) =>
+                  t.dueDate != null &&
+                  t.dueDate!.isAfter(
+                    todayStart.subtract(const Duration(milliseconds: 1)),
+                  ) &&
+                  t.dueDate!.isBefore(
+                    todayEnd.add(const Duration(milliseconds: 1)),
+                  ),
+            )
+            .toList();
+        final highPriority = todayTasks
+            .where((t) => t.priority == 'urgent' || t.priority == 'high')
+            .length;
 
-        final body = 'You have ${todayTasks.length} tasks today ($highPriority high priority). Tap to view briefing.';
-        await scheduleDailyBriefing(time: settings.dailyBriefingTime, body: body);
+        final body =
+            'You have ${todayTasks.length} tasks today ($highPriority high priority). Tap to view briefing.';
+        await scheduleDailyBriefing(
+          time: settings.dailyBriefingTime,
+          body: body,
+        );
       } else {
         await cancelNotification(40000);
       }
@@ -359,14 +383,19 @@ class NotificationService {
       // 2. Reschedule Daily Summary
       if (settings.dailySummaryEnabled) {
         final tasks = await db.getAllTasks();
-        final completedToday = tasks.where((t) =>
-            t.status == 'completed' &&
-            t.completedAt != null &&
-            t.completedAt!.year == DateTime.now().year &&
-            t.completedAt!.month == DateTime.now().month &&
-            t.completedAt!.day == DateTime.now().day).length;
+        final completedToday = tasks
+            .where(
+              (t) =>
+                  t.status == 'completed' &&
+                  t.completedAt != null &&
+                  t.completedAt!.year == DateTime.now().year &&
+                  t.completedAt!.month == DateTime.now().month &&
+                  t.completedAt!.day == DateTime.now().day,
+            )
+            .length;
 
-        final body = 'Completed $completedToday tasks today. Tap for full summary.';
+        final body =
+            'Completed $completedToday tasks today. Tap for full summary.';
         await scheduleDailySummary(time: settings.dailySummaryTime, body: body);
       } else {
         await cancelNotification(50000);
@@ -376,7 +405,9 @@ class NotificationService {
       if (settings.taskRemindersEnabled) {
         final tasks = await db.getAllTasks();
         for (final t in tasks) {
-          if (t.status != 'completed' && t.reminderAt != null && t.reminderAt!.isAfter(DateTime.now())) {
+          if (t.status != 'completed' &&
+              t.reminderAt != null &&
+              t.reminderAt!.isAfter(DateTime.now())) {
             await scheduleTaskReminder(
               taskId: t.id,
               title: t.title,
@@ -406,5 +437,6 @@ class NotificationService {
   }
 
   static String _formatDate(DateTime dt) => '${dt.day}/${dt.month}/${dt.year}';
-  static String _formatTime(DateTime dt) => '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  static String _formatTime(DateTime dt) =>
+      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }

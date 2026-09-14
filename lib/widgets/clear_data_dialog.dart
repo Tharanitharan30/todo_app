@@ -69,9 +69,10 @@ class _ClearDataDialogState extends State<ClearDataDialog> {
                   const Text(
                     'Affected Data:',
                     style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                        fontSize: 12),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                      fontSize: 12,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(

@@ -44,8 +44,8 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
       _selectedCategory = expenseCategories.first;
       _selectedPaymentMethod =
           paymentMethods.contains(settings.defaultPaymentMethod)
-              ? settings.defaultPaymentMethod
-              : paymentMethods.first;
+          ? settings.defaultPaymentMethod
+          : paymentMethods.first;
       _selectedDate = DateTime.now();
       _isRecurring = false;
     }
@@ -138,9 +138,9 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
     } catch (e) {
       debugPrint('Error saving expense: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save expense: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save expense: $e')));
       }
     } finally {
       if (mounted) {
@@ -167,10 +167,14 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
 
       final expenses = await db.getAllExpenses();
       final totalSpent = expenses
-          .where((e) =>
-              e.category.toLowerCase() == category.toLowerCase() &&
-              e.date.isAfter(monthStart.subtract(const Duration(milliseconds: 1))) &&
-              e.date.isBefore(monthEnd.add(const Duration(milliseconds: 1))))
+          .where(
+            (e) =>
+                e.category.toLowerCase() == category.toLowerCase() &&
+                e.date.isAfter(
+                  monthStart.subtract(const Duration(milliseconds: 1)),
+                ) &&
+                e.date.isBefore(monthEnd.add(const Duration(milliseconds: 1))),
+          )
           .fold(0.0, (sum, e) => sum + e.amount);
 
       final percentage = (totalSpent / budget.amount) * 100;
@@ -207,7 +211,9 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                 // Amount Field
                 TextFormField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Amount ($symbol)',
                     prefixText: '$symbol ',
@@ -228,10 +234,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                     border: OutlineInputBorder(),
                   ),
                   items: expenseCategories.map((cat) {
-                    return DropdownMenuItem(
-                      value: cat,
-                      child: Text(cat),
-                    );
+                    return DropdownMenuItem(value: cat, child: Text(cat));
                   }).toList(),
                   onChanged: (val) {
                     if (val != null) {
@@ -271,10 +274,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                     border: OutlineInputBorder(),
                   ),
                   items: paymentMethods.map((method) {
-                    return DropdownMenuItem(
-                      value: method,
-                      child: Text(method),
-                    );
+                    return DropdownMenuItem(value: method, child: Text(method));
                   }).toList(),
                   onChanged: (val) {
                     if (val != null) {

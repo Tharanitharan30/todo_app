@@ -108,106 +108,119 @@ class BackupService {
       'createdAt': DateTime.now().toIso8601String(),
       'data': {
         'tasks': tasksList
-            .map((t) => {
-                  'id': t.id,
-                  'title': t.title,
-                  'description': t.description,
-                  'dueDate': t.dueDate?.toIso8601String(),
-                  'dueTime': t.dueTime?.toIso8601String(),
-                  'priority': t.priority,
-                  'category': t.category,
-                  'status': t.status,
-                  'isRecurring': t.isRecurring,
-                  'recurrenceRule': t.recurrenceRule,
-                  'isImportant': t.isImportant,
-                  'createdAt': t.createdAt.toIso8601String(),
-                  'completedAt': t.completedAt?.toIso8601String(),
-                  'tags': t.tags,
-                  'reminderAt': t.reminderAt?.toIso8601String(),
-                  'notes': t.notes,
-                })
+            .map(
+              (t) => {
+                'id': t.id,
+                'title': t.title,
+                'description': t.description,
+                'dueDate': t.dueDate?.toIso8601String(),
+                'dueTime': t.dueTime?.toIso8601String(),
+                'priority': t.priority,
+                'category': t.category,
+                'status': t.status,
+                'isRecurring': t.isRecurring,
+                'recurrenceRule': t.recurrenceRule,
+                'isImportant': t.isImportant,
+                'createdAt': t.createdAt.toIso8601String(),
+                'completedAt': t.completedAt?.toIso8601String(),
+                'tags': t.tags,
+                'reminderAt': t.reminderAt?.toIso8601String(),
+                'notes': t.notes,
+              },
+            )
             .toList(),
         'subtasks': subtasksList
-            .map((s) => {
-                  'id': s.id,
-                  'taskId': s.taskId,
-                  'title': s.title,
-                  'completed': s.completed,
-                })
+            .map(
+              (s) => {
+                'id': s.id,
+                'taskId': s.taskId,
+                'title': s.title,
+                'completed': s.completed,
+              },
+            )
             .toList(),
         'expenses': expensesList
-            .map((e) => {
-                  'id': e.id,
-                  'amount': e.amount,
-                  'category': e.category,
-                  'date': e.date.toIso8601String(),
-                  'paymentMethod': e.paymentMethod,
-                  'note': e.note,
-                  'isRecurring': e.isRecurring,
-                  'createdAt': e.createdAt.toIso8601String(),
-                })
+            .map(
+              (e) => {
+                'id': e.id,
+                'amount': e.amount,
+                'category': e.category,
+                'date': e.date.toIso8601String(),
+                'paymentMethod': e.paymentMethod,
+                'note': e.note,
+                'isRecurring': e.isRecurring,
+                'createdAt': e.createdAt.toIso8601String(),
+              },
+            )
             .toList(),
         'income': incomeList
-            .map((i) => {
-                  'id': i.id,
-                  'amount': i.amount,
-                  'source': i.source,
-                  'date': i.date.toIso8601String(),
-                  'note': i.note,
-                  'isRecurring': i.isRecurring,
-                  'createdAt': i.createdAt.toIso8601String(),
-                })
+            .map(
+              (i) => {
+                'id': i.id,
+                'amount': i.amount,
+                'source': i.source,
+                'date': i.date.toIso8601String(),
+                'note': i.note,
+                'isRecurring': i.isRecurring,
+                'createdAt': i.createdAt.toIso8601String(),
+              },
+            )
             .toList(),
         'budgets': budgetsList
-            .map((b) => {
-                  'id': b.id,
-                  'category': b.category,
-                  'amount': b.amount,
-                  'createdAt': b.createdAt.toIso8601String(),
-                })
+            .map(
+              (b) => {
+                'id': b.id,
+                'category': b.category,
+                'amount': b.amount,
+                'createdAt': b.createdAt.toIso8601String(),
+              },
+            )
             .toList(),
         'savingsGoals': savingsList
-            .map((s) => {
-                  'id': s.id,
-                  'name': s.name,
-                  'targetAmount': s.targetAmount,
-                  'currentAmount': s.currentAmount,
-                  'targetDate': s.targetDate?.toIso8601String(),
-                  'createdAt': s.createdAt.toIso8601String(),
-                })
+            .map(
+              (s) => {
+                'id': s.id,
+                'name': s.name,
+                'targetAmount': s.targetAmount,
+                'currentAmount': s.currentAmount,
+                'targetDate': s.targetDate?.toIso8601String(),
+                'createdAt': s.createdAt.toIso8601String(),
+              },
+            )
             .toList(),
         'subscriptions': subscriptionsList
-            .map((s) => {
-                  'id': s.id,
-                  'name': s.name,
-                  'amount': s.amount,
-                  'billingCycle': s.billingCycle,
-                  'nextBillingDate': s.nextBillingDate.toIso8601String(),
-                  'active': s.active,
-                  'createdAt': s.createdAt.toIso8601String(),
-                })
+            .map(
+              (s) => {
+                'id': s.id,
+                'name': s.name,
+                'amount': s.amount,
+                'billingCycle': s.billingCycle,
+                'nextBillingDate': s.nextBillingDate.toIso8601String(),
+                'active': s.active,
+                'createdAt': s.createdAt.toIso8601String(),
+              },
+            )
             .toList(),
         'notifications': notificationsList
-            .map((n) => {
-                  'id': n.id,
-                  'type': n.type,
-                  'referenceId': n.referenceId,
-                  'title': n.title,
-                  'body': n.body,
-                  'scheduledAt': n.scheduledAt.toIso8601String(),
-                  'enabled': n.enabled,
-                  'read': n.read,
-                  'payload': n.payload,
-                  'createdAt': n.createdAt.toIso8601String(),
-                })
+            .map(
+              (n) => {
+                'id': n.id,
+                'type': n.type,
+                'referenceId': n.referenceId,
+                'title': n.title,
+                'body': n.body,
+                'scheduledAt': n.scheduledAt.toIso8601String(),
+                'enabled': n.enabled,
+                'read': n.read,
+                'payload': n.payload,
+                'createdAt': n.createdAt.toIso8601String(),
+              },
+            )
             .toList(),
         'settings': settingsList
-            .map((s) => {
-                  'key': s.key,
-                  'value': s.value,
-                })
+            .map((s) => {'key': s.key, 'value': s.value})
             .toList(),
-      }
+      },
     };
 
     final jsonString = const JsonEncoder.withIndent('  ').convert(backupMap);
@@ -236,7 +249,9 @@ class BackupService {
 
     // Update last backup time setting
     final currentSettings = ref.read(appSettingsProvider);
-    await ref.read(appSettingsProvider.notifier).updateSettings(
+    await ref
+        .read(appSettingsProvider.notifier)
+        .updateSettings(
           currentSettings.copyWith(lastBackupTime: DateTime.now()),
         );
 
@@ -308,11 +323,14 @@ class BackupService {
   // RESTORE BACKUP JSON WITH SAFETY & ROLLBACK
   // ==========================================
   static Future<bool> restoreBackup(
-      WidgetRef ref, Map<String, dynamic> backupJson) async {
+    WidgetRef ref,
+    Map<String, dynamic> backupJson,
+  ) async {
     final db = ref.read(databaseProvider);
     final appSupportDir = await getApplicationSupportDirectory();
-    final safetyBackupFile =
-        File(path.join(appSupportDir.path, 'safety_backup_temp.json'));
+    final safetyBackupFile = File(
+      path.join(appSupportDir.path, 'safety_backup_temp.json'),
+    );
 
     // Step 1: Create local safety backup
     try {
@@ -349,32 +367,44 @@ class BackupService {
         for (final rawT in rawTasks) {
           final t = rawT as Map<String, dynamic>;
           final oldId = t['id'] as int?;
-          final newId = await db.into(db.tasks).insert(
+          final newId = await db
+              .into(db.tasks)
+              .insert(
                 TasksCompanion.insert(
                   title: t['title'] ?? 'Untitled',
                   description: Value(t['description'] ?? ''),
-                  dueDate: Value(t['dueDate'] != null
-                      ? DateTime.tryParse(t['dueDate'])
-                      : null),
-                  dueTime: Value(t['dueTime'] != null
-                      ? DateTime.tryParse(t['dueTime'])
-                      : null),
+                  dueDate: Value(
+                    t['dueDate'] != null
+                        ? DateTime.tryParse(t['dueDate'])
+                        : null,
+                  ),
+                  dueTime: Value(
+                    t['dueTime'] != null
+                        ? DateTime.tryParse(t['dueTime'])
+                        : null,
+                  ),
                   priority: Value(t['priority'] ?? 'medium'),
                   category: Value(t['category'] ?? 'personal'),
                   status: Value(t['status'] ?? 'pending'),
                   isRecurring: Value(t['isRecurring'] ?? false),
                   recurrenceRule: Value(t['recurrenceRule']),
                   isImportant: Value(t['isImportant'] ?? false),
-                  createdAt: Value(t['createdAt'] != null
-                      ? DateTime.parse(t['createdAt'])
-                      : DateTime.now()),
-                  completedAt: Value(t['completedAt'] != null
-                      ? DateTime.tryParse(t['completedAt'])
-                      : null),
+                  createdAt: Value(
+                    t['createdAt'] != null
+                        ? DateTime.parse(t['createdAt'])
+                        : DateTime.now(),
+                  ),
+                  completedAt: Value(
+                    t['completedAt'] != null
+                        ? DateTime.tryParse(t['completedAt'])
+                        : null,
+                  ),
                   tags: Value(t['tags'] ?? ''),
-                  reminderAt: Value(t['reminderAt'] != null
-                      ? DateTime.tryParse(t['reminderAt'])
-                      : null),
+                  reminderAt: Value(
+                    t['reminderAt'] != null
+                        ? DateTime.tryParse(t['reminderAt'])
+                        : null,
+                  ),
                   notes: Value(t['notes'] ?? ''),
                 ),
               );
@@ -389,7 +419,9 @@ class BackupService {
           final s = rawS as Map<String, dynamic>;
           final oldTaskId = s['taskId'] as int;
           final mappedTaskId = taskIdMapping[oldTaskId] ?? oldTaskId;
-          await db.into(db.subtasks).insert(
+          await db
+              .into(db.subtasks)
+              .insert(
                 SubtasksCompanion.insert(
                   taskId: mappedTaskId,
                   title: s['title'] ?? '',
@@ -402,7 +434,9 @@ class BackupService {
         final rawExpenses = data['expenses'] as List? ?? [];
         for (final rawE in rawExpenses) {
           final e = rawE as Map<String, dynamic>;
-          await db.into(db.expenses).insert(
+          await db
+              .into(db.expenses)
+              .insert(
                 ExpensesCompanion.insert(
                   amount: (e['amount'] as num).toDouble(),
                   category: e['category'] ?? 'Other',
@@ -410,9 +444,11 @@ class BackupService {
                   paymentMethod: Value(e['paymentMethod'] ?? 'cash'),
                   note: Value(e['note'] ?? ''),
                   isRecurring: Value(e['isRecurring'] ?? false),
-                  createdAt: Value(e['createdAt'] != null
-                      ? DateTime.parse(e['createdAt'])
-                      : DateTime.now()),
+                  createdAt: Value(
+                    e['createdAt'] != null
+                        ? DateTime.parse(e['createdAt'])
+                        : DateTime.now(),
+                  ),
                 ),
               );
         }
@@ -421,16 +457,20 @@ class BackupService {
         final rawIncome = data['income'] as List? ?? [];
         for (final rawI in rawIncome) {
           final i = rawI as Map<String, dynamic>;
-          await db.into(db.income).insert(
+          await db
+              .into(db.income)
+              .insert(
                 IncomeCompanion.insert(
                   amount: (i['amount'] as num).toDouble(),
                   source: i['source'] ?? 'Other',
                   date: DateTime.parse(i['date']),
                   note: Value(i['note'] ?? ''),
                   isRecurring: Value(i['isRecurring'] ?? false),
-                  createdAt: Value(i['createdAt'] != null
-                      ? DateTime.parse(i['createdAt'])
-                      : DateTime.now()),
+                  createdAt: Value(
+                    i['createdAt'] != null
+                        ? DateTime.parse(i['createdAt'])
+                        : DateTime.now(),
+                  ),
                 ),
               );
         }
@@ -439,13 +479,17 @@ class BackupService {
         final rawBudgets = data['budgets'] as List? ?? [];
         for (final rawB in rawBudgets) {
           final b = rawB as Map<String, dynamic>;
-          await db.into(db.budgets).insert(
+          await db
+              .into(db.budgets)
+              .insert(
                 BudgetsCompanion.insert(
                   category: b['category'] ?? 'Other',
                   amount: (b['amount'] as num).toDouble(),
-                  createdAt: Value(b['createdAt'] != null
-                      ? DateTime.parse(b['createdAt'])
-                      : DateTime.now()),
+                  createdAt: Value(
+                    b['createdAt'] != null
+                        ? DateTime.parse(b['createdAt'])
+                        : DateTime.now(),
+                  ),
                 ),
               );
         }
@@ -454,17 +498,23 @@ class BackupService {
         final rawSavings = data['savingsGoals'] as List? ?? [];
         for (final rawS in rawSavings) {
           final s = rawS as Map<String, dynamic>;
-          await db.into(db.savingsGoals).insert(
+          await db
+              .into(db.savingsGoals)
+              .insert(
                 SavingsGoalsCompanion.insert(
                   name: s['name'] ?? 'Savings Goal',
                   targetAmount: (s['targetAmount'] as num).toDouble(),
                   currentAmount: Value((s['currentAmount'] as num).toDouble()),
-                  targetDate: Value(s['targetDate'] != null
-                      ? DateTime.tryParse(s['targetDate'])
-                      : null),
-                  createdAt: Value(s['createdAt'] != null
-                      ? DateTime.parse(s['createdAt'])
-                      : DateTime.now()),
+                  targetDate: Value(
+                    s['targetDate'] != null
+                        ? DateTime.tryParse(s['targetDate'])
+                        : null,
+                  ),
+                  createdAt: Value(
+                    s['createdAt'] != null
+                        ? DateTime.parse(s['createdAt'])
+                        : DateTime.now(),
+                  ),
                 ),
               );
         }
@@ -473,16 +523,20 @@ class BackupService {
         final rawSubscriptions = data['subscriptions'] as List? ?? [];
         for (final rawSub in rawSubscriptions) {
           final sub = rawSub as Map<String, dynamic>;
-          await db.into(db.subscriptions).insert(
+          await db
+              .into(db.subscriptions)
+              .insert(
                 SubscriptionsCompanion.insert(
                   name: sub['name'] ?? 'Subscription',
                   amount: (sub['amount'] as num).toDouble(),
                   billingCycle: Value(sub['billingCycle'] ?? 'monthly'),
                   nextBillingDate: DateTime.parse(sub['nextBillingDate']),
                   active: Value(sub['active'] ?? true),
-                  createdAt: Value(sub['createdAt'] != null
-                      ? DateTime.parse(sub['createdAt'])
-                      : DateTime.now()),
+                  createdAt: Value(
+                    sub['createdAt'] != null
+                        ? DateTime.parse(sub['createdAt'])
+                        : DateTime.now(),
+                  ),
                 ),
               );
         }
@@ -491,7 +545,9 @@ class BackupService {
         final rawNotifications = data['notifications'] as List? ?? [];
         for (final rawN in rawNotifications) {
           final n = rawN as Map<String, dynamic>;
-          await db.into(db.appNotifications).insert(
+          await db
+              .into(db.appNotifications)
+              .insert(
                 AppNotificationsCompanion.insert(
                   type: n['type'] ?? 'general',
                   referenceId: Value(n['referenceId']),
@@ -501,9 +557,11 @@ class BackupService {
                   enabled: Value(n['enabled'] ?? true),
                   read: Value(n['read'] ?? false),
                   payload: Value(n['payload']),
-                  createdAt: Value(n['createdAt'] != null
-                      ? DateTime.parse(n['createdAt'])
-                      : DateTime.now()),
+                  createdAt: Value(
+                    n['createdAt'] != null
+                        ? DateTime.parse(n['createdAt'])
+                        : DateTime.now(),
+                  ),
                 ),
               );
         }
@@ -564,8 +622,8 @@ class BackupService {
         'dueTime',
         'isImportant',
         'createdAt',
-        'notes'
-      ]
+        'notes',
+      ],
     ];
 
     for (final t in tasksList) {
@@ -591,7 +649,7 @@ class BackupService {
     final expensesList = await db.getAllExpenses();
 
     final List<List<dynamic>> rows = [
-      ['date', 'amount', 'category', 'paymentMethod', 'note', 'isRecurring']
+      ['date', 'amount', 'category', 'paymentMethod', 'note', 'isRecurring'],
     ];
 
     for (final e in expensesList) {
@@ -614,7 +672,7 @@ class BackupService {
     final incomeList = await db.getAllIncome();
 
     final List<List<dynamic>> rows = [
-      ['date', 'amount', 'source', 'note', 'isRecurring']
+      ['date', 'amount', 'source', 'note', 'isRecurring'],
     ];
 
     for (final i in incomeList) {
@@ -632,7 +690,9 @@ class BackupService {
   }
 
   static Future<String?> _saveCsvFile(
-      String fileName, String csvContent) async {
+    String fileName,
+    String csvContent,
+  ) async {
     String? savePath;
     try {
       savePath = await FilePicker.platform.saveFile(
@@ -659,8 +719,9 @@ class BackupService {
   // CSV IMPORT PREVIEW & PROCESS
   // ==========================================
   static CsvImportPreview previewCsvImport(String csvContent, String type) {
-    final List<List<dynamic>> rows =
-        const CsvToListConverter().convert(csvContent);
+    final List<List<dynamic>> rows = const CsvToListConverter().convert(
+      csvContent,
+    );
     if (rows.isEmpty || rows.length == 1) {
       return CsvImportPreview(
         totalRows: 0,
@@ -671,15 +732,17 @@ class BackupService {
       );
     }
 
-    final header =
-        rows[0].map((e) => e.toString().trim().toLowerCase()).toList();
+    final header = rows[0]
+        .map((e) => e.toString().trim().toLowerCase())
+        .toList();
     final dataRows = rows.sublist(1);
 
     List<Map<String, dynamic>> validItems = [];
     int invalidCount = 0;
 
     for (final row in dataRows) {
-      if (row.isEmpty || row.every((element) => element.toString().trim().isEmpty)) {
+      if (row.isEmpty ||
+          row.every((element) => element.toString().trim().isEmpty)) {
         continue;
       }
       final map = <String, dynamic>{};
@@ -694,7 +757,8 @@ class BackupService {
         if (amount != null && category != null && category.isNotEmpty) {
           map['amount'] = amount;
           map['category'] = category;
-          map['date'] = DateTime.tryParse(map['date']?.toString() ?? '') ??
+          map['date'] =
+              DateTime.tryParse(map['date']?.toString() ?? '') ??
               DateTime.now();
           map['paymentmethod'] = map['paymentmethod']?.toString() ?? 'cash';
           map['note'] = map['note']?.toString() ?? '';
@@ -706,7 +770,8 @@ class BackupService {
         if (amount != null && source != null && source.isNotEmpty) {
           map['amount'] = amount;
           map['source'] = source;
-          map['date'] = DateTime.tryParse(map['date']?.toString() ?? '') ??
+          map['date'] =
+              DateTime.tryParse(map['date']?.toString() ?? '') ??
               DateTime.now();
           map['note'] = map['note']?.toString() ?? '';
           isValid = true;
@@ -739,7 +804,9 @@ class BackupService {
   }
 
   static Future<int> processCsvImport(
-      WidgetRef ref, CsvImportPreview preview) async {
+    WidgetRef ref,
+    CsvImportPreview preview,
+  ) async {
     final db = ref.read(databaseProvider);
     int count = 0;
 
@@ -840,8 +907,9 @@ class BackupService {
     String formattedSize = 'Unknown';
     try {
       final appSupportDir = await getApplicationSupportDirectory();
-      final dbFile =
-          File(path.join(appSupportDir.path, 'personal_command_center.sqlite'));
+      final dbFile = File(
+        path.join(appSupportDir.path, 'personal_command_center.sqlite'),
+      );
       if (await dbFile.exists()) {
         final bytes = await dbFile.length();
         if (bytes < 1024 * 1024) {

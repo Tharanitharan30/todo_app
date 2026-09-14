@@ -53,8 +53,9 @@ final subscriptionsStreamProvider = StreamProvider<List<Subscription>>((ref) {
 // Budget Status List Provider
 // ----------------------------------------------------
 
-final budgetStatusListProvider =
-    Provider<AsyncValue<List<BudgetStatusInfo>>>((ref) {
+final budgetStatusListProvider = Provider<AsyncValue<List<BudgetStatusInfo>>>((
+  ref,
+) {
   final budgetsAsync = ref.watch(budgetsStreamProvider);
   final expensesAsync = ref.watch(expensesStreamProvider);
 
@@ -74,9 +75,11 @@ final budgetStatusListProvider =
   final monthEnd = DateTime(now.year, now.month + 1, 0, 23, 59, 59, 999);
 
   // Filter current month expenses
-  final currentMonthExpenses = expenses.where((e) =>
-      e.date.isAfter(monthStart.subtract(const Duration(milliseconds: 1))) &&
-      e.date.isBefore(monthEnd.add(const Duration(milliseconds: 1))));
+  final currentMonthExpenses = expenses.where(
+    (e) =>
+        e.date.isAfter(monthStart.subtract(const Duration(milliseconds: 1))) &&
+        e.date.isBefore(monthEnd.add(const Duration(milliseconds: 1))),
+  );
 
   List<BudgetStatusInfo> result = [];
 
@@ -85,7 +88,9 @@ final budgetStatusListProvider =
         .where((e) => e.category.toLowerCase() == budget.category.toLowerCase())
         .fold(0.0, (sum, e) => sum + e.amount);
 
-    final percentage = budget.amount <= 0 ? 0.0 : (categorySpent / budget.amount) * 100;
+    final percentage = budget.amount <= 0
+        ? 0.0
+        : (categorySpent / budget.amount) * 100;
 
     String status;
     if (percentage >= 100) {
@@ -115,8 +120,9 @@ final budgetStatusListProvider =
 // Subscription Summary Provider
 // ----------------------------------------------------
 
-final subscriptionSummaryProvider =
-    Provider<AsyncValue<SubscriptionSummary>>((ref) {
+final subscriptionSummaryProvider = Provider<AsyncValue<SubscriptionSummary>>((
+  ref,
+) {
   final subsAsync = ref.watch(subscriptionsStreamProvider);
 
   return subsAsync.whenData((subs) {

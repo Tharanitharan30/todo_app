@@ -122,9 +122,9 @@ class _AddIncomeDialogState extends ConsumerState<AddIncomeDialog> {
     } catch (e) {
       debugPrint('Error saving income: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save income: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save income: $e')));
       }
     } finally {
       if (mounted) {
@@ -153,7 +153,9 @@ class _AddIncomeDialogState extends ConsumerState<AddIncomeDialog> {
                 // Amount Field
                 TextFormField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Amount (₹)',
                     prefixText: '₹ ',
@@ -174,10 +176,7 @@ class _AddIncomeDialogState extends ConsumerState<AddIncomeDialog> {
                     border: OutlineInputBorder(),
                   ),
                   items: incomeSources.map((src) {
-                    return DropdownMenuItem(
-                      value: src,
-                      child: Text(src),
-                    );
+                    return DropdownMenuItem(value: src, child: Text(src));
                   }).toList(),
                   onChanged: (val) {
                     if (val != null) {

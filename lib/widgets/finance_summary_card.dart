@@ -57,10 +57,7 @@ class FinanceSummaryCard extends ConsumerWidget {
               children: [
                 const Text(
                   'Finance',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 PopupMenuButton<FinanceDateFilter>(
                   initialValue: activeFilter,
@@ -169,7 +166,8 @@ class FinanceSummaryCard extends ConsumerWidget {
                           child: _summaryTile(
                             context,
                             title: 'Savings',
-                            amount: '₹ ${summary.balance > 0 ? summary.balance.toStringAsFixed(0) : "0"} (${summary.savingsRate.toStringAsFixed(0)}%)',
+                            amount:
+                                '₹ ${summary.balance > 0 ? summary.balance.toStringAsFixed(0) : "0"} (${summary.savingsRate.toStringAsFixed(0)}%)',
                             color: Colors.blue,
                             icon: Icons.savings_outlined,
                           ),
@@ -200,9 +198,7 @@ class FinanceSummaryCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.15 : 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withValues(alpha: 0.25),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

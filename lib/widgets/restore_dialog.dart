@@ -47,19 +47,40 @@ class RestoreConfirmationDialog extends StatelessWidget {
                   _buildComparisonHeader(),
                   const Divider(),
                   _buildComparisonRow(
-                      'Tasks', currentStorage.taskCount, validationResult.taskCount),
-                  _buildComparisonRow('Subtasks', currentStorage.subtaskCount,
-                      validationResult.subtaskCount),
-                  _buildComparisonRow('Expenses', currentStorage.expenseCount,
-                      validationResult.expenseCount),
-                  _buildComparisonRow('Income', currentStorage.incomeCount,
-                      validationResult.incomeCount),
-                  _buildComparisonRow('Budgets', currentStorage.budgetCount,
-                      validationResult.budgetCount),
-                  _buildComparisonRow('Savings Goals', currentStorage.savingsCount,
-                      validationResult.savingsCount),
-                  _buildComparisonRow('Subscriptions',
-                      currentStorage.subscriptionCount, validationResult.subscriptionCount),
+                    'Tasks',
+                    currentStorage.taskCount,
+                    validationResult.taskCount,
+                  ),
+                  _buildComparisonRow(
+                    'Subtasks',
+                    currentStorage.subtaskCount,
+                    validationResult.subtaskCount,
+                  ),
+                  _buildComparisonRow(
+                    'Expenses',
+                    currentStorage.expenseCount,
+                    validationResult.expenseCount,
+                  ),
+                  _buildComparisonRow(
+                    'Income',
+                    currentStorage.incomeCount,
+                    validationResult.incomeCount,
+                  ),
+                  _buildComparisonRow(
+                    'Budgets',
+                    currentStorage.budgetCount,
+                    validationResult.budgetCount,
+                  ),
+                  _buildComparisonRow(
+                    'Savings Goals',
+                    currentStorage.savingsCount,
+                    validationResult.savingsCount,
+                  ),
+                  _buildComparisonRow(
+                    'Subscriptions',
+                    currentStorage.subscriptionCount,
+                    validationResult.subscriptionCount,
+                  ),
                 ],
               ),
             ),
@@ -96,18 +117,24 @@ class RestoreConfirmationDialog extends StatelessWidget {
       children: [
         Expanded(
           flex: 2,
-          child: Text('Data Type',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          child: Text(
+            'Data Type',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
         ),
         Expanded(
-          child: Text('Current',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          child: Text(
+            'Current',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
         ),
         Expanded(
-          child: Text('Backup',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          child: Text(
+            'Backup',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
         ),
       ],
     );
@@ -123,17 +150,22 @@ class RestoreConfirmationDialog extends StatelessWidget {
             child: Text(label, style: const TextStyle(fontSize: 13)),
           ),
           Expanded(
-            child: Text('$current',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 13, color: Colors.grey)),
+            child: Text(
+              '$current',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 13, color: Colors.grey),
+            ),
           ),
           Expanded(
-            child: Text('$backup',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue)),
+            child: Text(
+              '$backup',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
+            ),
           ),
         ],
       ),

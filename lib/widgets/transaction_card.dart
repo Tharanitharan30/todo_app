@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database.dart';
 import '../providers/database_provider.dart';
 import '../providers/finance_provider.dart';
+import '../providers/settings_provider.dart';
+import '../utils/currency_formatter.dart';
 import 'add_expense_dialog.dart';
 import 'add_income_dialog.dart';
 
@@ -101,7 +103,10 @@ class TransactionCard extends ConsumerWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(width: 16),
           Flexible(
@@ -162,24 +167,31 @@ class TransactionCard extends ConsumerWidget {
         await db.deleteExpense(item.id);
       }
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transaction deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Transaction deleted')));
       }
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(appSettingsProvider);
     final isIncome = item.isIncome;
     final color = isIncome ? Colors.green : Colors.red;
     final iconData = _getCategoryIcon(item.title, isIncome);
+    final formattedAmount = CurrencyFormatter.format(
+      item.amount,
+      currencyCode: settings.currency,
+    );
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
+        side: BorderSide(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
@@ -210,17 +222,26 @@ class TransactionCard extends ConsumerWidget {
                   '${item.date.day}/${item.date.month}/${item.date.year}',
                   style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
-                if (item.paymentMethod != null && item.paymentMethod!.isNotEmpty) ...[
+                if (item.paymentMethod != null &&
+                    item.paymentMethod!.isNotEmpty) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       item.paymentMethod!,
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -232,7 +253,7 @@ class TransactionCard extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${isIncome ? '+' : '-'} ₹${item.amount.toStringAsFixed(0)}',
+              '${isIncome ? '+' : '-'} $formattedAmount',
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.bold,

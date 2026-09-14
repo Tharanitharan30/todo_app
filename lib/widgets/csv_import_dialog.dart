@@ -38,12 +38,19 @@ class CsvImportDialog extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _buildRow('Total Rows Found', '${preview.totalRows}', Colors.black),
+                _buildRow(
+                  'Total Rows Found',
+                  '${preview.totalRows}',
+                  Colors.black,
+                ),
                 const Divider(),
                 _buildRow('Valid Rows', '${preview.validRows}', Colors.green),
                 const Divider(),
-                _buildRow('Invalid / Skipped', '${preview.invalidRows}',
-                    preview.invalidRows > 0 ? Colors.red : Colors.grey),
+                _buildRow(
+                  'Invalid / Skipped',
+                  '${preview.invalidRows}',
+                  preview.invalidRows > 0 ? Colors.red : Colors.grey,
+                ),
               ],
             ),
           ),
@@ -84,7 +91,10 @@ class CsvImportDialog extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-                fontSize: 13, fontWeight: FontWeight.bold, color: color),
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
         ],
       ),

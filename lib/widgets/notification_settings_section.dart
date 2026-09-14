@@ -20,7 +20,9 @@ class NotificationSettingsSection extends ConsumerWidget {
     if (picked != null) {
       onTimeSelected(picked);
       // Trigger notification rescheduling
-      Future.microtask(() => NotificationService().rescheduleAllNotifications(ref));
+      Future.microtask(
+        () => NotificationService().rescheduleAllNotifications(ref),
+      );
     }
   }
 
@@ -67,16 +69,13 @@ class NotificationSettingsSection extends ConsumerWidget {
                 icon: const Icon(Icons.access_time),
                 tooltip: 'Change briefing time',
                 onPressed: () {
-                  _selectTime(
-                    context,
-                    ref,
-                    settings.dailyBriefingTime,
-                    (newTime) {
-                      notifier.updateSettings(
-                        settings.copyWith(dailyBriefingTime: newTime),
-                      );
-                    },
-                  );
+                  _selectTime(context, ref, settings.dailyBriefingTime, (
+                    newTime,
+                  ) {
+                    notifier.updateSettings(
+                      settings.copyWith(dailyBriefingTime: newTime),
+                    );
+                  });
                 },
               ),
             ),
@@ -100,16 +99,13 @@ class NotificationSettingsSection extends ConsumerWidget {
                 icon: const Icon(Icons.access_time),
                 tooltip: 'Change summary time',
                 onPressed: () {
-                  _selectTime(
-                    context,
-                    ref,
-                    settings.dailySummaryTime,
-                    (newTime) {
-                      notifier.updateSettings(
-                        settings.copyWith(dailySummaryTime: newTime),
-                      );
-                    },
-                  );
+                  _selectTime(context, ref, settings.dailySummaryTime, (
+                    newTime,
+                  ) {
+                    notifier.updateSettings(
+                      settings.copyWith(dailySummaryTime: newTime),
+                    );
+                  });
                 },
               ),
             ),

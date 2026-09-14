@@ -62,7 +62,9 @@ class TaskCompletionChartCard extends ConsumerWidget {
                 if (points.isEmpty) {
                   return const SizedBox(
                     height: 180,
-                    child: Center(child: Text('No task completion data available')),
+                    child: Center(
+                      child: Text('No task completion data available'),
+                    ),
                   );
                 }
 
@@ -79,10 +81,17 @@ class TaskCompletionChartCard extends ConsumerWidget {
                   height: 200,
                   child: LineChart(
                     LineChartData(
-                      gridData: const FlGridData(show: true, drawVerticalLine: false),
+                      gridData: const FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                      ),
                       titlesData: FlTitlesData(
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
@@ -107,7 +116,10 @@ class TaskCompletionChartCard extends ConsumerWidget {
                             reservedSize: 30,
                             getTitlesWidget: (val, meta) {
                               if (val % 1 == 0) {
-                                return Text(val.toInt().toString(), style: const TextStyle(fontSize: 10));
+                                return Text(
+                                  val.toInt().toString(),
+                                  style: const TextStyle(fontSize: 10),
+                                );
                               }
                               return const SizedBox.shrink();
                             },
@@ -193,7 +205,9 @@ class TasksCreatedVsCompletedChartCard extends ConsumerWidget {
                 if (points.isEmpty) {
                   return const SizedBox(
                     height: 180,
-                    child: Center(child: Text('No task activity data available')),
+                    child: Center(
+                      child: Text('No task activity data available'),
+                    ),
                   );
                 }
 
@@ -231,8 +245,12 @@ class TasksCreatedVsCompletedChartCard extends ConsumerWidget {
                       alignment: BarChartAlignment.spaceAround,
                       maxY: maxY * 1.2,
                       titlesData: FlTitlesData(
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
@@ -257,7 +275,10 @@ class TasksCreatedVsCompletedChartCard extends ConsumerWidget {
                             reservedSize: 28,
                             getTitlesWidget: (val, meta) {
                               if (val % 1 == 0) {
-                                return Text(val.toInt().toString(), style: const TextStyle(fontSize: 10));
+                                return Text(
+                                  val.toInt().toString(),
+                                  style: const TextStyle(fontSize: 10),
+                                );
                               }
                               return const SizedBox.shrink();
                             },
@@ -265,7 +286,10 @@ class TasksCreatedVsCompletedChartCard extends ConsumerWidget {
                         ),
                       ),
                       borderData: FlBorderData(show: false),
-                      gridData: const FlGridData(show: true, drawVerticalLine: false),
+                      gridData: const FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                      ),
                       barGroups: groups,
                     ),
                   ),
@@ -282,9 +306,16 @@ class TasksCreatedVsCompletedChartCard extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        ),
       ],
     );
   }
@@ -326,7 +357,9 @@ class CategoryProductivityCard extends ConsumerWidget {
                 if (categories.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(24),
-                    child: Center(child: Text('No completed tasks by category')),
+                    child: Center(
+                      child: Text('No completed tasks by category'),
+                    ),
                   );
                 }
 
@@ -348,11 +381,17 @@ class CategoryProductivityCard extends ConsumerWidget {
                             children: [
                               Text(
                                 item.category,
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
                               ),
                               Text(
                                 '${item.completedCount} tasks (${item.percentage.toStringAsFixed(1)}%)',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -362,7 +401,9 @@ class CategoryProductivityCard extends ConsumerWidget {
                             child: LinearProgressIndicator(
                               value: progress,
                               minHeight: 8,
-                              backgroundColor: Colors.grey.withValues(alpha: 0.15),
+                              backgroundColor: Colors.grey.withValues(
+                                alpha: 0.15,
+                              ),
                               color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
@@ -465,13 +506,19 @@ class PriorityAnalysisCard extends ConsumerWidget {
                                 ),
                                 Text(
                                   '${item.completedTasks} of ${item.totalTasks} tasks completed',
-                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(10),
@@ -532,7 +579,11 @@ class TaskStatusChartCard extends ConsumerWidget {
               ),
               error: (err, _) => Text('Error: $err'),
               data: (dist) {
-                final total = dist.pending + dist.completed + dist.overdue + dist.important;
+                final total =
+                    dist.pending +
+                    dist.completed +
+                    dist.overdue +
+                    dist.important;
                 if (total == 0) {
                   return const Padding(
                     padding: EdgeInsets.all(24),
@@ -547,7 +598,10 @@ class TaskStatusChartCard extends ConsumerWidget {
                       value: dist.completed.toDouble(),
                       title: '${dist.completed}',
                       radius: 40,
-                      titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      titleStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   if (dist.pending > 0)
                     PieChartSectionData(
@@ -555,7 +609,10 @@ class TaskStatusChartCard extends ConsumerWidget {
                       value: dist.pending.toDouble(),
                       title: '${dist.pending}',
                       radius: 40,
-                      titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      titleStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   if (dist.overdue > 0)
                     PieChartSectionData(
@@ -563,7 +620,10 @@ class TaskStatusChartCard extends ConsumerWidget {
                       value: dist.overdue.toDouble(),
                       title: '${dist.overdue}',
                       radius: 40,
-                      titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      titleStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   if (dist.important > 0)
                     PieChartSectionData(
@@ -571,7 +631,10 @@ class TaskStatusChartCard extends ConsumerWidget {
                       value: dist.important.toDouble(),
                       title: '${dist.important}',
                       radius: 40,
-                      titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      titleStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                 ];
 
@@ -612,9 +675,16 @@ class TaskStatusChartCard extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 6),
-        Text('$label ($count)', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(
+          '$label ($count)',
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        ),
       ],
     );
   }
@@ -669,7 +739,9 @@ class ExpenseCategoryChartCard extends ConsumerWidget {
                 if (list.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(24),
-                    child: Center(child: Text('No expense records for selected period')),
+                    child: Center(
+                      child: Text('No expense records for selected period'),
+                    ),
                   );
                 }
 
@@ -679,9 +751,15 @@ class ExpenseCategoryChartCard extends ConsumerWidget {
                   return PieChartSectionData(
                     color: color,
                     value: cat.amount,
-                    title: cat.percentage >= 8 ? '${cat.percentage.toStringAsFixed(0)}%' : '',
+                    title: cat.percentage >= 8
+                        ? '${cat.percentage.toStringAsFixed(0)}%'
+                        : '',
                     radius: 40,
-                    titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 11),
+                    titleStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 11,
+                    ),
                   );
                 });
 
@@ -707,14 +785,28 @@ class ExpenseCategoryChartCard extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
-                              Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+                              Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
-                                child: Text(cat.category, style: const TextStyle(fontWeight: FontWeight.w500)),
+                                child: Text(
+                                  cat.category,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
                               Text(
                                 '₹${cat.amount.toStringAsFixed(0)} (${cat.percentage.toStringAsFixed(1)}%)',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -785,10 +877,17 @@ class DailySpendingChartCard extends ConsumerWidget {
                   height: 200,
                   child: LineChart(
                     LineChartData(
-                      gridData: const FlGridData(show: true, drawVerticalLine: false),
+                      gridData: const FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                      ),
                       titlesData: FlTitlesData(
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
@@ -814,9 +913,15 @@ class DailySpendingChartCard extends ConsumerWidget {
                             getTitlesWidget: (val, meta) {
                               if (val == 0) return const Text('0');
                               if (val >= 1000) {
-                                return Text('₹${(val / 1000).toStringAsFixed(0)}k', style: const TextStyle(fontSize: 9));
+                                return Text(
+                                  '₹${(val / 1000).toStringAsFixed(0)}k',
+                                  style: const TextStyle(fontSize: 9),
+                                );
                               }
-                              return Text('₹${val.toInt()}', style: const TextStyle(fontSize: 9));
+                              return Text(
+                                '₹${val.toInt()}',
+                                style: const TextStyle(fontSize: 9),
+                              );
                             },
                           ),
                         ),
@@ -918,8 +1023,12 @@ class MonthlyExpensesChartCard extends ConsumerWidget {
                       alignment: BarChartAlignment.spaceAround,
                       maxY: maxAmt * 1.2,
                       titlesData: FlTitlesData(
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
@@ -945,15 +1054,24 @@ class MonthlyExpensesChartCard extends ConsumerWidget {
                             getTitlesWidget: (val, meta) {
                               if (val == 0) return const Text('0');
                               if (val >= 1000) {
-                                return Text('₹${(val / 1000).toStringAsFixed(0)}k', style: const TextStyle(fontSize: 9));
+                                return Text(
+                                  '₹${(val / 1000).toStringAsFixed(0)}k',
+                                  style: const TextStyle(fontSize: 9),
+                                );
                               }
-                              return Text('₹${val.toInt()}', style: const TextStyle(fontSize: 9));
+                              return Text(
+                                '₹${val.toInt()}',
+                                style: const TextStyle(fontSize: 9),
+                              );
                             },
                           ),
                         ),
                       ),
                       borderData: FlBorderData(show: false),
-                      gridData: const FlGridData(show: true, drawVerticalLine: false),
+                      gridData: const FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                      ),
                       barGroups: groups,
                     ),
                   ),
@@ -1023,10 +1141,17 @@ class SavingsTrendChartCard extends ConsumerWidget {
                       height: 180,
                       child: LineChart(
                         LineChartData(
-                          gridData: const FlGridData(show: true, drawVerticalLine: false),
+                          gridData: const FlGridData(
+                            show: true,
+                            drawVerticalLine: false,
+                          ),
                           titlesData: FlTitlesData(
-                            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
@@ -1035,7 +1160,10 @@ class SavingsTrendChartCard extends ConsumerWidget {
                                   if (idx >= 0 && idx < points.length) {
                                     return Padding(
                                       padding: const EdgeInsets.only(top: 6),
-                                      child: Text(points[idx].monthLabel, style: const TextStyle(fontSize: 10)),
+                                      child: Text(
+                                        points[idx].monthLabel,
+                                        style: const TextStyle(fontSize: 10),
+                                      ),
                                     );
                                   }
                                   return const SizedBox.shrink();
@@ -1048,9 +1176,15 @@ class SavingsTrendChartCard extends ConsumerWidget {
                                 reservedSize: 36,
                                 getTitlesWidget: (val, meta) {
                                   if (val >= 1000) {
-                                    return Text('₹${(val / 1000).toStringAsFixed(0)}k', style: const TextStyle(fontSize: 9));
+                                    return Text(
+                                      '₹${(val / 1000).toStringAsFixed(0)}k',
+                                      style: const TextStyle(fontSize: 9),
+                                    );
                                   }
-                                  return Text('₹${val.toInt()}', style: const TextStyle(fontSize: 9));
+                                  return Text(
+                                    '₹${val.toInt()}',
+                                    style: const TextStyle(fontSize: 9),
+                                  );
                                 },
                               ),
                             ),
@@ -1086,8 +1220,13 @@ class SavingsTrendChartCard extends ConsumerWidget {
                           spacing: 12,
                           children: rateList.map((r) {
                             return Chip(
-                              label: Text('${r.monthLabel}: ${r.rate.toStringAsFixed(0)}% rate', style: const TextStyle(fontSize: 11)),
-                              backgroundColor: Colors.teal.withValues(alpha: 0.1),
+                              label: Text(
+                                '${r.monthLabel}: ${r.rate.toStringAsFixed(0)}% rate',
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                              backgroundColor: Colors.teal.withValues(
+                                alpha: 0.1,
+                              ),
                             );
                           }).toList(),
                         );
@@ -1137,7 +1276,10 @@ class BudgetAnalyticsCard extends ConsumerWidget {
               ),
               error: (err, _) => Text('Error: $err'),
               data: (summary) {
-                final progress = (summary.utilizationPercentage / 100).clamp(0.0, 1.0);
+                final progress = (summary.utilizationPercentage / 100).clamp(
+                  0.0,
+                  1.0,
+                );
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1147,11 +1289,18 @@ class BudgetAnalyticsCard extends ConsumerWidget {
                       children: [
                         Text(
                           'Total Spent: ₹${summary.totalSpent.toStringAsFixed(0)} / ₹${summary.totalBudget.toStringAsFixed(0)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                         Text(
                           '${summary.utilizationPercentage.toStringAsFixed(1)}%',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.deepOrange),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Colors.deepOrange,
+                          ),
                         ),
                       ],
                     ),
@@ -1162,7 +1311,9 @@ class BudgetAnalyticsCard extends ConsumerWidget {
                         value: progress,
                         minHeight: 10,
                         backgroundColor: Colors.grey.withValues(alpha: 0.15),
-                        color: summary.utilizationPercentage >= 100 ? Colors.red : Colors.orange,
+                        color: summary.utilizationPercentage >= 100
+                            ? Colors.red
+                            : Colors.orange,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -1170,9 +1321,21 @@ class BudgetAnalyticsCard extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _statusBadge('Safe', summary.safeCount, Colors.green),
-                        _statusBadge('Warning', summary.warningCount, Colors.orange),
-                        _statusBadge('Critical', summary.criticalCount, Colors.deepOrange),
-                        _statusBadge('Exceeded', summary.exceededCount, Colors.red),
+                        _statusBadge(
+                          'Warning',
+                          summary.warningCount,
+                          Colors.orange,
+                        ),
+                        _statusBadge(
+                          'Critical',
+                          summary.criticalCount,
+                          Colors.deepOrange,
+                        ),
+                        _statusBadge(
+                          'Exceeded',
+                          summary.exceededCount,
+                          Colors.red,
+                        ),
                       ],
                     ),
                   ],
@@ -1188,7 +1351,14 @@ class BudgetAnalyticsCard extends ConsumerWidget {
   Widget _statusBadge(String label, int count, Color color) {
     return Column(
       children: [
-        Text('$count', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          '$count',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
         Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
       ],
     );
@@ -1233,9 +1403,21 @@ class SubscriptionAnalyticsCard extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _metricBox('Active', '${subSummary.activeCount}', Colors.deepPurple),
-                        _metricBox('Monthly Cost', '₹${subSummary.monthlyCost.toStringAsFixed(0)}', Colors.indigo),
-                        _metricBox('Yearly Cost', '₹${subSummary.yearlyCost.toStringAsFixed(0)}', Colors.blue),
+                        _metricBox(
+                          'Active',
+                          '${subSummary.activeCount}',
+                          Colors.deepPurple,
+                        ),
+                        _metricBox(
+                          'Monthly Cost',
+                          '₹${subSummary.monthlyCost.toStringAsFixed(0)}',
+                          Colors.indigo,
+                        ),
+                        _metricBox(
+                          'Yearly Cost',
+                          '₹${subSummary.yearlyCost.toStringAsFixed(0)}',
+                          Colors.blue,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -1244,7 +1426,9 @@ class SubscriptionAnalyticsCard extends ConsumerWidget {
                       children: subSummary.countByCycle.entries.map((e) {
                         return Chip(
                           label: Text('${e.key}: ${e.value}'),
-                          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
                         );
                       }).toList(),
                     ),
@@ -1261,7 +1445,14 @@ class SubscriptionAnalyticsCard extends ConsumerWidget {
   Widget _metricBox(String title, String val, Color color) {
     return Column(
       children: [
-        Text(val, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          val,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
         Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey)),
       ],
     );

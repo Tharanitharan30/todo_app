@@ -19,9 +19,9 @@ class CurrencyFormatter {
     String formattedNumber;
     if (currencyCode == 'JPY') {
       formattedNumber = absAmount.round().toString().replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+        (Match m) => '${m[1]},',
+      );
     } else {
       final parts = absAmount.toStringAsFixed(2).split('.');
       final intPart = parts[0].replaceAllMapped(

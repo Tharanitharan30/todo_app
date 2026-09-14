@@ -9,7 +9,11 @@ import '../providers/database_provider.dart';
 class SavingsScreen extends ConsumerWidget {
   const SavingsScreen({super.key});
 
-  void _showGoalDialog(BuildContext context, WidgetRef ref, [SavingsGoal? existing]) {
+  void _showGoalDialog(
+    BuildContext context,
+    WidgetRef ref, [
+    SavingsGoal? existing,
+  ]) {
     final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController(text: existing?.name ?? '');
     final targetController = TextEditingController(
@@ -20,7 +24,9 @@ class SavingsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: Text(existing == null ? 'Create Savings Goal' : 'Edit Savings Goal'),
+          title: Text(
+            existing == null ? 'Create Savings Goal' : 'Edit Savings Goal',
+          ),
           content: Form(
             key: formKey,
             child: Column(
@@ -32,22 +38,29 @@ class SavingsScreen extends ConsumerWidget {
                     labelText: 'Goal Name',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Enter goal name' : null,
+                  validator: (v) =>
+                      v == null || v.trim().isEmpty ? 'Enter goal name' : null,
                   autofocus: true,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: targetController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Target Amount (₹)',
                     prefixText: '₹ ',
                     border: OutlineInputBorder(),
                   ),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Enter target amount';
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Enter target amount';
+                    }
                     final parsed = double.tryParse(v.trim());
-                    if (parsed == null || parsed <= 0) return 'Enter valid target > 0';
+                    if (parsed == null || parsed <= 0) {
+                      return 'Enter valid target > 0';
+                    }
                     return null;
                   },
                 ),
@@ -118,7 +131,9 @@ class SavingsScreen extends ConsumerWidget {
             key: formKey,
             child: TextFormField(
               controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: InputDecoration(
                 labelText: 'Amount (₹)',
                 prefixText: '₹ ',
@@ -127,7 +142,9 @@ class SavingsScreen extends ConsumerWidget {
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Enter amount';
                 final parsed = double.tryParse(v.trim());
-                if (parsed == null || parsed <= 0) return 'Enter valid amount > 0';
+                if (parsed == null || parsed <= 0) {
+                  return 'Enter valid amount > 0';
+                }
                 if (!isAdd && parsed > goal.currentAmount) {
                   return 'Cannot remove more than saved amount (₹${goal.currentAmount.toStringAsFixed(0)})';
                 }
@@ -145,8 +162,9 @@ class SavingsScreen extends ConsumerWidget {
               onPressed: () async {
                 if (!formKey.currentState!.validate()) return;
                 final delta = double.parse(amountController.text.trim());
-                final newAmount =
-                    isAdd ? goal.currentAmount + delta : goal.currentAmount - delta;
+                final newAmount = isAdd
+                    ? goal.currentAmount + delta
+                    : goal.currentAmount - delta;
 
                 final db = ref.read(databaseProvider);
                 await db.updateSavingsGoalAmount(goal.id, newAmount);
@@ -170,7 +188,11 @@ class SavingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _deleteGoal(BuildContext context, WidgetRef ref, SavingsGoal goal) async {
+  Future<void> _deleteGoal(
+    BuildContext context,
+    WidgetRef ref,
+    SavingsGoal goal,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -194,9 +216,9 @@ class SavingsScreen extends ConsumerWidget {
       final db = ref.read(databaseProvider);
       await db.deleteSavingsGoal(goal.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Savings goal deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Savings goal deleted')));
       }
     }
   }
@@ -225,7 +247,11 @@ class SavingsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.savings_outlined, size: 64, color: Colors.grey),
+                  const Icon(
+                    Icons.savings_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     'No savings goals created yet',
@@ -249,13 +275,18 @@ class SavingsScreen extends ConsumerWidget {
               final goal = goals[index];
               final pct = goal.targetAmount <= 0
                   ? 0.0
-                  : ((goal.currentAmount / goal.targetAmount) * 100).clamp(0.0, 100.0);
+                  : ((goal.currentAmount / goal.targetAmount) * 100).clamp(
+                      0.0,
+                      100.0,
+                    );
               final progress = pct / 100.0;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 elevation: 1,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -277,9 +308,19 @@ class SavingsScreen extends ConsumerWidget {
                               if (val == 'edit') {
                                 _showGoalDialog(context, ref, goal);
                               } else if (val == 'add') {
-                                _showAddRemoveMoneyDialog(context, ref, goal, true);
+                                _showAddRemoveMoneyDialog(
+                                  context,
+                                  ref,
+                                  goal,
+                                  true,
+                                );
                               } else if (val == 'remove') {
-                                _showAddRemoveMoneyDialog(context, ref, goal, false);
+                                _showAddRemoveMoneyDialog(
+                                  context,
+                                  ref,
+                                  goal,
+                                  false,
+                                );
                               } else if (val == 'delete') {
                                 _deleteGoal(context, ref, goal);
                               }
@@ -289,7 +330,10 @@ class SavingsScreen extends ConsumerWidget {
                                 value: 'add',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.add_circle_outline, color: Colors.green),
+                                    Icon(
+                                      Icons.add_circle_outline,
+                                      color: Colors.green,
+                                    ),
                                     SizedBox(width: 8),
                                     Text('Add money'),
                                   ],
@@ -299,7 +343,10 @@ class SavingsScreen extends ConsumerWidget {
                                 value: 'remove',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.remove_circle_outline, color: Colors.orange),
+                                    Icon(
+                                      Icons.remove_circle_outline,
+                                      color: Colors.orange,
+                                    ),
                                     SizedBox(width: 8),
                                     Text('Remove money'),
                                   ],
@@ -319,9 +366,15 @@ class SavingsScreen extends ConsumerWidget {
                                 value: 'delete',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete_outline, color: Colors.red),
+                                    Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.red,
+                                    ),
                                     SizedBox(width: 8),
-                                    Text('Delete', style: TextStyle(color: Colors.red)),
+                                    Text(
+                                      'Delete',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -373,7 +426,10 @@ class SavingsScreen extends ConsumerWidget {
                             ],
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.blue.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),

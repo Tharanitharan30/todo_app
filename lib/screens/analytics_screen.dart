@@ -30,8 +30,10 @@ class AnalyticsScreen extends ConsumerWidget {
     final tasksAsync = ref.watch(tasksProvider);
     final expensesAsync = ref.watch(expensesStreamProvider);
 
-    final hasTaskData = tasksAsync.value != null && tasksAsync.value!.isNotEmpty;
-    final hasExpenseData = expensesAsync.value != null && expensesAsync.value!.isNotEmpty;
+    final hasTaskData =
+        tasksAsync.value != null && tasksAsync.value!.isNotEmpty;
+    final hasExpenseData =
+        expensesAsync.value != null && expensesAsync.value!.isNotEmpty;
     final hasData = hasTaskData || hasExpenseData;
 
     return Scaffold(
@@ -83,15 +85,21 @@ class AnalyticsScreen extends ConsumerWidget {
                           ),
                           ButtonSegment(
                             value: AnalyticsPeriod.sevenDays,
-                            label: Text(_periodLabel(AnalyticsPeriod.sevenDays)),
+                            label: Text(
+                              _periodLabel(AnalyticsPeriod.sevenDays),
+                            ),
                           ),
                           ButtonSegment(
                             value: AnalyticsPeriod.thirtyDays,
-                            label: Text(_periodLabel(AnalyticsPeriod.thirtyDays)),
+                            label: Text(
+                              _periodLabel(AnalyticsPeriod.thirtyDays),
+                            ),
                           ),
                           ButtonSegment(
                             value: AnalyticsPeriod.twelveMonths,
-                            label: Text(_periodLabel(AnalyticsPeriod.twelveMonths)),
+                            label: Text(
+                              _periodLabel(AnalyticsPeriod.twelveMonths),
+                            ),
                           ),
                         ],
                         selected: {activePeriod},
@@ -132,9 +140,9 @@ class AnalyticsScreen extends ConsumerWidget {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],

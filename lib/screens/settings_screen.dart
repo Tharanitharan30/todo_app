@@ -14,9 +14,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 900;
@@ -88,7 +86,8 @@ class SettingsScreen extends ConsumerWidget {
         leading: const Icon(Icons.notifications_active_outlined),
         title: const Text('Request Notification Permission'),
         subtitle: const Text(
-            'Ensure app has system permission to display daily briefing & alerts'),
+          'Ensure app has system permission to display daily briefing & alerts',
+        ),
         onTap: () async {
           await NotificationService().requestPermissions();
           if (context.mounted) {

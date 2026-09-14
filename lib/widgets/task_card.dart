@@ -25,7 +25,13 @@ class TaskCard extends ConsumerWidget {
     final now = DateTime.now();
     DateTime due = task.dueDate!;
     if (task.dueTime != null) {
-      due = DateTime(due.year, due.month, due.day, task.dueTime!.hour, task.dueTime!.minute);
+      due = DateTime(
+        due.year,
+        due.month,
+        due.day,
+        task.dueTime!.hour,
+        task.dueTime!.minute,
+      );
     } else {
       due = DateTime(due.year, due.month, due.day, 23, 59, 59);
     }
@@ -42,14 +48,18 @@ class TaskCard extends ConsumerWidget {
       dateStr = 'Today';
     } else if (taskDate.isAtSameMomentAs(today.add(const Duration(days: 1)))) {
       dateStr = 'Tomorrow';
-    } else if (taskDate.isAtSameMomentAs(today.subtract(const Duration(days: 1)))) {
+    } else if (taskDate.isAtSameMomentAs(
+      today.subtract(const Duration(days: 1)),
+    )) {
       dateStr = 'Yesterday';
     } else {
       dateStr = '${date.day}/${date.month}/${date.year}';
     }
 
     if (time != null) {
-      final hour = time.hour == 0 ? 12 : (time.hour > 12 ? time.hour - 12 : time.hour);
+      final hour = time.hour == 0
+          ? 12
+          : (time.hour > 12 ? time.hour - 12 : time.hour);
       final minute = time.minute.toString().padLeft(2, '0');
       final period = time.hour >= 12 ? 'PM' : 'AM';
       dateStr += ' $hour:$minute $period';
@@ -118,10 +128,9 @@ class TaskCard extends ConsumerWidget {
                                 ? TextDecoration.lineThrough
                                 : TextDecoration.none,
                             color: completed
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withAlpha(120)
+                                ? Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(120)
                                 : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
@@ -134,9 +143,9 @@ class TaskCard extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 13,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -160,21 +169,23 @@ class TaskCard extends ConsumerWidget {
                                     size: 13,
                                     color: overdue
                                         ? Colors.red
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
+                                        : Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                   ),
                                   const SizedBox(width: 3),
                                   Text(
                                     _formatDueDate(task.dueDate!, task.dueTime),
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: overdue ? FontWeight.bold : FontWeight.normal,
+                                      fontWeight: overdue
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
                                       color: overdue
                                           ? Colors.red
-                                          : Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant,
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
@@ -183,27 +194,30 @@ class TaskCard extends ConsumerWidget {
                             // Subtask progress
                             subtasksAsync.when(
                               data: (subtasks) {
-                                if (subtasks.isEmpty) return const SizedBox.shrink();
-                                final done =
-                                    subtasks.where((s) => s.completed).length;
+                                if (subtasks.isEmpty) {
+                                  return const SizedBox.shrink();
+                                }
+                                final done = subtasks
+                                    .where((s) => s.completed)
+                                    .length;
                                 return Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
                                       Icons.check_box_outlined,
                                       size: 13,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
                                       '$done/${subtasks.length}',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ],
@@ -251,14 +265,20 @@ class TaskCard extends ConsumerWidget {
                               break;
                             case 'important':
                               database.toggleTaskImportant(
-                                  task.id, !task.isImportant);
+                                task.id,
+                                !task.isImportant,
+                              );
                               break;
                             case 'duplicate':
-                              final newId = await database.duplicateTask(task.id);
+                              final newId = await database.duplicateTask(
+                                task.id,
+                              );
                               if (context.mounted && newId > 0) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Task duplicated successfully'),
+                                    content: Text(
+                                      'Task duplicated successfully',
+                                    ),
                                   ),
                                 );
                               }
@@ -290,9 +310,11 @@ class TaskCard extends ConsumerWidget {
                                   size: 18,
                                 ),
                                 const SizedBox(width: 8),
-                                Text(completed
-                                    ? 'Mark incomplete'
-                                    : 'Mark complete'),
+                                Text(
+                                  completed
+                                      ? 'Mark incomplete'
+                                      : 'Mark complete',
+                                ),
                               ],
                             ),
                           ),
@@ -308,9 +330,11 @@ class TaskCard extends ConsumerWidget {
                                   color: Colors.amber,
                                 ),
                                 const SizedBox(width: 8),
-                                Text(task.isImportant
-                                    ? 'Remove star'
-                                    : 'Mark important'),
+                                Text(
+                                  task.isImportant
+                                      ? 'Remove star'
+                                      : 'Mark important',
+                                ),
                               ],
                             ),
                           ),
@@ -328,10 +352,16 @@ class TaskCard extends ConsumerWidget {
                             value: 'delete',
                             child: Row(
                               children: [
-                                Icon(Icons.delete_outline,
-                                    size: 18, color: Colors.red),
+                                Icon(
+                                  Icons.delete_outline,
+                                  size: 18,
+                                  color: Colors.red,
+                                ),
                                 SizedBox(width: 8),
-                                Text('Delete', style: TextStyle(color: Colors.red)),
+                                Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
                               ],
                             ),
                           ),

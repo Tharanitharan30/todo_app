@@ -18,8 +18,7 @@ class DataManagementSection extends ConsumerStatefulWidget {
       _DataManagementSectionState();
 }
 
-class _DataManagementSectionState
-    extends ConsumerState<DataManagementSection> {
+class _DataManagementSectionState extends ConsumerState<DataManagementSection> {
   StorageInfo? _storageInfo;
   bool _isLoading = false;
 
@@ -85,15 +84,20 @@ class _DataManagementSectionState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Database Storage Size',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 13)),
+                        const Text(
+                          'Database Storage Size',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
                         Text(
                           _storageInfo!.dbFileSizeFormatted,
                           style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: theme.colorScheme.primary),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
                       ],
                     ),
@@ -109,8 +113,14 @@ class _DataManagementSectionState
                         _buildCountChip('Income', _storageInfo!.incomeCount),
                         _buildCountChip('Budgets', _storageInfo!.budgetCount),
                         _buildCountChip('Savings', _storageInfo!.savingsCount),
-                        _buildCountChip('Subscriptions', _storageInfo!.subscriptionCount),
-                        _buildCountChip('Notifications', _storageInfo!.notificationCount),
+                        _buildCountChip(
+                          'Subscriptions',
+                          _storageInfo!.subscriptionCount,
+                        ),
+                        _buildCountChip(
+                          'Notifications',
+                          _storageInfo!.notificationCount,
+                        ),
                       ],
                     ),
                   ],
@@ -126,18 +136,25 @@ class _DataManagementSectionState
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Last Backup',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 13)),
-                    Text(lastBackupText,
-                        style:
-                            const TextStyle(fontSize: 12, color: Colors.grey)),
+                    const Text(
+                      'Last Backup',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      lastBackupText,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
                   ],
                 ),
                 Switch(
                   value: settings.autoBackupEnabled,
                   onChanged: (val) {
-                    ref.read(appSettingsProvider.notifier).updateSettings(
+                    ref
+                        .read(appSettingsProvider.notifier)
+                        .updateSettings(
                           settings.copyWith(autoBackupEnabled: val),
                         );
                   },
@@ -206,7 +223,10 @@ class _DataManagementSectionState
             const Text(
               'Clear Data',
               style: TextStyle(
-                  fontWeight: FontWeight.w600, fontSize: 14, color: Colors.red),
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: Colors.red,
+              ),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -220,8 +240,10 @@ class _DataManagementSectionState
                     description:
                         'Are you sure you want to clear all task and subtask records?',
                     affectedItemsText: 'All Tasks & Subtasks',
-                    onConfirm: () => BackupService.clearData(ref, clearTasks: true)
-                        .then((_) => _refreshStorageInfo()),
+                    onConfirm: () => BackupService.clearData(
+                      ref,
+                      clearTasks: true,
+                    ).then((_) => _refreshStorageInfo()),
                   ),
                   child: const Text('Clear Tasks'),
                 ),
@@ -233,9 +255,10 @@ class _DataManagementSectionState
                         'Are you sure you want to clear expenses, income, budgets, savings, and subscriptions?',
                     affectedItemsText:
                         'Expenses, Income, Budgets, Savings Goals, Subscriptions',
-                    onConfirm: () =>
-                        BackupService.clearData(ref, clearFinance: true)
-                            .then((_) => _refreshStorageInfo()),
+                    onConfirm: () => BackupService.clearData(
+                      ref,
+                      clearFinance: true,
+                    ).then((_) => _refreshStorageInfo()),
                   ),
                   child: const Text('Clear Finance'),
                 ),
@@ -246,9 +269,10 @@ class _DataManagementSectionState
                     description:
                         'Are you sure you want to clear notification history?',
                     affectedItemsText: 'All App Notifications',
-                    onConfirm: () =>
-                        BackupService.clearData(ref, clearNotifications: true)
-                            .then((_) => _refreshStorageInfo()),
+                    onConfirm: () => BackupService.clearData(
+                      ref,
+                      clearNotifications: true,
+                    ).then((_) => _refreshStorageInfo()),
                   ),
                   child: const Text('Clear Notifications'),
                 ),
@@ -264,8 +288,10 @@ class _DataManagementSectionState
                     affectedItemsText:
                         'Tasks, Subtasks, Expenses, Income, Budgets, Savings Goals, Subscriptions, Notifications',
                     requireDeleteText: true,
-                    onConfirm: () => BackupService.clearData(ref, clearAll: true)
-                        .then((_) => _refreshStorageInfo()),
+                    onConfirm: () => BackupService.clearData(
+                      ref,
+                      clearAll: true,
+                    ).then((_) => _refreshStorageInfo()),
                   ),
                   child: const Text('Clear All Data'),
                 ),
@@ -281,10 +307,14 @@ class _DataManagementSectionState
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('$label: ',
-            style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        Text('$count',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        Text(
+          '$label: ',
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        Text(
+          '$count',
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }
@@ -364,7 +394,9 @@ class _DataManagementSectionState
               setState(() => _isLoading = true);
               try {
                 final success = await BackupService.restoreBackup(
-                    ref, validation.backupJson!);
+                  ref,
+                  validation.backupJson!,
+                );
                 await _refreshStorageInfo();
                 if (mounted && success) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -379,7 +411,8 @@ class _DataManagementSectionState
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                          'Restore failed. Your data has been kept safe: $e'),
+                        'Restore failed. Your data has been kept safe: $e',
+                      ),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -472,8 +505,10 @@ class _DataManagementSectionState
             onConfirmImport: () async {
               setState(() => _isLoading = true);
               try {
-                final count =
-                    await BackupService.processCsvImport(ref, preview);
+                final count = await BackupService.processCsvImport(
+                  ref,
+                  preview,
+                );
                 await _refreshStorageInfo();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(

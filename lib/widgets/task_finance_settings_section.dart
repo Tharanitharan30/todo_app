@@ -33,7 +33,9 @@ class TaskFinanceSettingsSection extends ConsumerWidget {
                   items: const ['low', 'medium', 'high', 'urgent'],
                   onChanged: (val) {
                     if (val != null) {
-                      ref.read(appSettingsProvider.notifier).updateSettings(
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateSettings(
                             settings.copyWith(defaultTaskPriority: val),
                           );
                     }
@@ -51,11 +53,13 @@ class TaskFinanceSettingsSection extends ConsumerWidget {
                     'education',
                     'finance',
                     'general',
-                    'other'
+                    'other',
                   ],
                   onChanged: (val) {
                     if (val != null) {
-                      ref.read(appSettingsProvider.notifier).updateSettings(
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateSettings(
                             settings.copyWith(defaultTaskCategory: val),
                           );
                     }
@@ -68,9 +72,9 @@ class TaskFinanceSettingsSection extends ConsumerWidget {
                   items: const ['Monday', 'Sunday'],
                   onChanged: (val) {
                     if (val != null) {
-                      ref.read(appSettingsProvider.notifier).updateSettings(
-                            settings.copyWith(weekStartsOn: val),
-                          );
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateSettings(settings.copyWith(weekStartsOn: val));
                     }
                   },
                 ),
@@ -106,9 +110,9 @@ class TaskFinanceSettingsSection extends ConsumerWidget {
                   },
                   onChanged: (val) {
                     if (val != null) {
-                      ref.read(appSettingsProvider.notifier).updateSettings(
-                            settings.copyWith(currency: val),
-                          );
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateSettings(settings.copyWith(currency: val));
                     }
                   },
                 ),
@@ -122,11 +126,13 @@ class TaskFinanceSettingsSection extends ConsumerWidget {
                     'Debit Card',
                     'Credit Card',
                     'Bank Transfer',
-                    'Other'
+                    'Other',
                   ],
                   onChanged: (val) {
                     if (val != null) {
-                      ref.read(appSettingsProvider.notifier).updateSettings(
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateSettings(
                             settings.copyWith(defaultPaymentMethod: val),
                           );
                     }
@@ -160,7 +166,8 @@ class TaskFinanceSettingsSection extends ConsumerWidget {
           value: effectiveValue,
           underline: const SizedBox(),
           items: items.map((item) {
-            final displayText = displayMap?[item] ??
+            final displayText =
+                displayMap?[item] ??
                 '${item[0].toUpperCase()}${item.substring(1)}';
             return DropdownMenuItem(
               value: item,

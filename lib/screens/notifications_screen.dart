@@ -48,7 +48,11 @@ class NotificationsScreen extends ConsumerWidget {
     }
   }
 
-  void _onNotificationTap(BuildContext context, WidgetRef ref, AppNotification item) {
+  void _onNotificationTap(
+    BuildContext context,
+    WidgetRef ref,
+    AppNotification item,
+  ) {
     final db = ref.read(databaseProvider);
     if (!item.read) {
       db.markNotificationAsRead(item.id);
@@ -60,7 +64,8 @@ class NotificationsScreen extends ConsumerWidget {
         context.go('/briefing');
       } else if (payload.startsWith('task:')) {
         context.go('/tasks');
-      } else if (payload.startsWith('budget:') || payload.startsWith('subscription:')) {
+      } else if (payload.startsWith('budget:') ||
+          payload.startsWith('subscription:')) {
         context.go('/finance');
       }
     }
@@ -85,14 +90,18 @@ class NotificationsScreen extends ConsumerWidget {
                   context: context,
                   builder: (ctx) => AlertDialog(
                     title: const Text('Clear All Notifications'),
-                    content: const Text('Are you sure you want to clear all notification history?'),
+                    content: const Text(
+                      'Are you sure you want to clear all notification history?',
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(false),
                         child: const Text('Cancel'),
                       ),
                       FilledButton(
-                        style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
                         onPressed: () => Navigator.of(ctx).pop(true),
                         child: const Text('Clear All'),
                       ),
@@ -121,7 +130,10 @@ class NotificationsScreen extends ConsumerWidget {
                   children: [
                     Icon(Icons.delete_sweep, size: 18, color: Colors.red),
                     SizedBox(width: 8),
-                    Text('Clear all history', style: TextStyle(color: Colors.red)),
+                    Text(
+                      'Clear all history',
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ],
                 ),
               ),
@@ -138,7 +150,11 @@ class NotificationsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.notifications_none, size: 64, color: Colors.grey),
+                  const Icon(
+                    Icons.notifications_none,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     'No notification history yet',
@@ -156,14 +172,19 @@ class NotificationsScreen extends ConsumerWidget {
           final yesterdayStart = todayStart.subtract(const Duration(days: 1));
 
           for (final item in list) {
-            final itemStart = DateTime(item.createdAt.year, item.createdAt.month, item.createdAt.day);
+            final itemStart = DateTime(
+              item.createdAt.year,
+              item.createdAt.month,
+              item.createdAt.day,
+            );
             String header;
             if (itemStart == todayStart) {
               header = 'Today';
             } else if (itemStart == yesterdayStart) {
               header = 'Yesterday';
             } else {
-              header = '${item.createdAt.day}/${item.createdAt.month}/${item.createdAt.year}';
+              header =
+                  '${item.createdAt.day}/${item.createdAt.month}/${item.createdAt.year}';
             }
             grouped.putIfAbsent(header, () => []).add(item);
           }
@@ -199,7 +220,9 @@ class NotificationsScreen extends ConsumerWidget {
                       key: Key('notif_${item.id}'),
                       direction: DismissDirection.endToStart,
                       onDismissed: (_) {
-                        ref.read(databaseProvider).deleteAppNotification(item.id);
+                        ref
+                            .read(databaseProvider)
+                            .deleteAppNotification(item.id);
                       },
                       background: Container(
                         alignment: Alignment.centerRight,
@@ -210,14 +233,14 @@ class NotificationsScreen extends ConsumerWidget {
                       child: Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         elevation: item.read ? 0 : 1,
-                        color: item.read
-                            ? null
-                            : color.withValues(alpha: 0.05),
+                        color: item.read ? null : color.withValues(alpha: 0.05),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: BorderSide(
                             color: item.read
-                                ? Theme.of(context).dividerColor.withValues(alpha: 0.2)
+                                ? Theme.of(
+                                    context,
+                                  ).dividerColor.withValues(alpha: 0.2)
                                 : color.withValues(alpha: 0.4),
                           ),
                         ),
@@ -258,7 +281,10 @@ class NotificationsScreen extends ConsumerWidget {
                               const SizedBox(height: 4),
                               Text(
                                 timeStr,
-                                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ],
                           ),
