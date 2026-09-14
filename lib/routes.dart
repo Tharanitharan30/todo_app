@@ -77,20 +77,31 @@ class AppNavigation extends ConsumerStatefulWidget {
 }
 
 class _AppNavigationState extends ConsumerState<AppNavigation> {
-  int get currentIndex {
-    final location = GoRouterState.of(context).uri.path;
-
+  int desktopIndex(String location) {
     if (location == '/tasks') return 1;
-    if (location == '/focus' || location == '/focus-history') return 2;
-    if (location == '/calendar') return 3;
+    if (location == '/calendar') return 2;
+    if (location == '/focus' || location == '/focus-history') return 3;
     if (location == '/finance') return 4;
     if (location == '/analytics') return 5;
     if (location == '/settings') return 6;
-
     return 0; // Default to Home for '/', '/briefing', '/notifications'
   }
 
-  void navigateTo(int index) {
+  int mobileIndex(String location) {
+    if (location == '/tasks') return 1;
+    if (location == '/calendar') return 2;
+    if (location == '/finance') return 3;
+    if (location == '/focus' ||
+        location == '/focus-history' ||
+        location == '/analytics' ||
+        location == '/settings' ||
+        location == '/notifications') {
+      return 4; // 'More' selected for nested routes
+    }
+    return 0;
+  }
+
+  void navigateDesktopTo(int index) {
     switch (index) {
       case 0:
         context.go('/');
@@ -99,10 +110,10 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
         context.go('/tasks');
         break;
       case 2:
-        context.go('/focus');
+        context.go('/calendar');
         break;
       case 3:
-        context.go('/calendar');
+        context.go('/focus');
         break;
       case 4:
         context.go('/finance');
@@ -114,6 +125,83 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
         context.go('/settings');
         break;
     }
+  }
+
+  void navigateMobileTo(int index) {
+    switch (index) {
+      case 0:
+        context.go('/');
+        break;
+      case 1:
+        context.go('/tasks');
+        break;
+      case 2:
+        context.go('/calendar');
+        break;
+      case 3:
+        context.go('/finance');
+        break;
+      case 4:
+        _showMoreSheet();
+        break;
+    }
+  }
+
+  void _showMoreSheet() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'More Options',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  leading: const Icon(Icons.timer_outlined),
+                  title: const Text('Focus / Pomodoro'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.go('/focus');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.bar_chart_outlined),
+                  title: const Text('Analytics & Insights'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.go('/analytics');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.notifications_outlined),
+                  title: const Text('Notifications'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.go('/notifications');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.settings_outlined),
+                  title: const Text('Settings'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.go('/settings');
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void showQuickAdd() {
@@ -271,6 +359,7 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final isDesktop = width >= 900;
+    final location = GoRouterState.of(context).uri.path;
     final unreadAsync = ref.watch(unreadNotificationCountProvider);
     final unreadCount = unreadAsync.value ?? 0;
 
@@ -279,8 +368,8 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
         body: Row(
           children: [
             NavigationRail(
-              selectedIndex: currentIndex,
-              onDestinationSelected: navigateTo,
+              selectedIndex: desktopIndex(location),
+              onDestinationSelected: navigateDesktopTo,
               labelType: NavigationRailLabelType.all,
               leading: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -315,14 +404,14 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
                   label: Text('Tasks'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.timer_outlined),
-                  selectedIcon: Icon(Icons.timer),
-                  label: Text('Focus'),
-                ),
-                NavigationRailDestination(
                   icon: Icon(Icons.calendar_month_outlined),
                   selectedIcon: Icon(Icons.calendar_month),
                   label: Text('Calendar'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.timer_outlined),
+                  selectedIcon: Icon(Icons.timer),
+                  label: Text('Focus'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.account_balance_wallet_outlined),
@@ -355,8 +444,8 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: currentIndex,
-        onDestinationSelected: navigateTo,
+        selectedIndex: mobileIndex(location),
+        onDestinationSelected: navigateMobileTo,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
@@ -369,11 +458,6 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
             label: 'Tasks',
           ),
           NavigationDestination(
-            icon: Icon(Icons.timer_outlined),
-            selectedIcon: Icon(Icons.timer),
-            label: 'Focus',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
             selectedIcon: Icon(Icons.calendar_month),
             label: 'Calendar',
@@ -384,14 +468,9 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
             label: 'Finance',
           ),
           NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart),
-            label: 'Analytics',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: Icon(Icons.more_horiz),
+            selectedIcon: Icon(Icons.more_horiz),
+            label: 'More',
           ),
         ],
       ),

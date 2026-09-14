@@ -526,6 +526,20 @@ class HomeScreen extends ConsumerWidget {
     required int todayTotal,
     required double todayProgress,
   }) {
+    final sortedTodayTasks = List<Task>.from(todayTasks);
+    sortedTodayTasks.sort((a, b) {
+      if (a.dueTime != null && b.dueTime != null) {
+        final aMins = a.dueTime!.hour * 60 + a.dueTime!.minute;
+        final bMins = b.dueTime!.hour * 60 + b.dueTime!.minute;
+        return aMins.compareTo(bMins);
+      } else if (a.dueTime != null) {
+        return -1;
+      } else if (b.dueTime != null) {
+        return 1;
+      }
+      return a.createdAt.compareTo(b.createdAt);
+    });
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -536,9 +550,19 @@ class HomeScreen extends ConsumerWidget {
               "Today's Schedule",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            TextButton(
-              onPressed: () => context.go('/tasks'),
-              child: const Text('View All Tasks'),
+            Row(
+              children: [
+                TextButton.icon(
+                  onPressed: () => context.go('/calendar'),
+                  icon: const Icon(Icons.calendar_month_outlined, size: 16),
+                  label: const Text('View Calendar'),
+                ),
+                const SizedBox(width: 4),
+                TextButton(
+                  onPressed: () => context.go('/tasks'),
+                  child: const Text('View All'),
+                ),
+              ],
             ),
           ],
         ),
@@ -577,9 +601,9 @@ class HomeScreen extends ConsumerWidget {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: todayTasks.length,
+            itemCount: sortedTodayTasks.length,
             itemBuilder: (context, index) {
-              final task = todayTasks[index];
+              final task = sortedTodayTasks[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: TaskCard(

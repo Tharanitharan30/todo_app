@@ -9,8 +9,15 @@ import '../services/notification_service.dart';
 
 class AddTaskDialog extends ConsumerStatefulWidget {
   final Task? taskToEdit;
+  final DateTime? initialDueDate;
+  final TimeOfDay? initialDueTime;
 
-  const AddTaskDialog({super.key, this.taskToEdit});
+  const AddTaskDialog({
+    super.key,
+    this.taskToEdit,
+    this.initialDueDate,
+    this.initialDueTime,
+  });
 
   @override
   ConsumerState<AddTaskDialog> createState() {
@@ -54,9 +61,11 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
     isRecurring = t?.isRecurring ?? false;
     recurrenceRule = t?.recurrenceRule ?? 'daily';
 
-    dueDate = t?.dueDate;
+    dueDate = t?.dueDate ?? widget.initialDueDate;
     if (t?.dueTime != null) {
       dueTime = TimeOfDay(hour: t!.dueTime!.hour, minute: t.dueTime!.minute);
+    } else if (widget.initialDueTime != null) {
+      dueTime = widget.initialDueTime;
     }
     reminderAt = t?.reminderAt;
   }

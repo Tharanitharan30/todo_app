@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../database/database.dart';
 import '../providers/finance_provider.dart';
 import '../providers/focus_provider.dart';
 import '../providers/settings_provider.dart';
@@ -180,7 +181,24 @@ class DailyBriefingScreen extends ConsumerWidget {
                           ),
                         )
                       else ...[
-                        ...todayTasks.map(
+                        ...(() {
+                          final sorted = List<Task>.from(todayTasks);
+                          sorted.sort((a, b) {
+                            if (a.dueTime != null && b.dueTime != null) {
+                              final aMins =
+                                  a.dueTime!.hour * 60 + a.dueTime!.minute;
+                              final bMins =
+                                  b.dueTime!.hour * 60 + b.dueTime!.minute;
+                              return aMins.compareTo(bMins);
+                            } else if (a.dueTime != null) {
+                              return -1;
+                            } else if (b.dueTime != null) {
+                              return 1;
+                            }
+                            return 0;
+                          });
+                          return sorted;
+                        })().map(
                           (t) => Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Row(
@@ -206,6 +224,19 @@ class DailyBriefingScreen extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
+                                if (t.dueTime != null) ...[
+                                  Text(
+                                    TimeOfDay(
+                                      hour: t.dueTime!.hour,
+                                      minute: t.dueTime!.minute,
+                                    ).format(context),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
                                 if (t.priority == 'urgent' ||
                                     t.priority == 'high')
                                   Chip(
