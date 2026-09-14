@@ -24,7 +24,7 @@ part 'database.g.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   // =========================
   // TASKS
@@ -419,7 +419,12 @@ class AppDatabase extends _$AppDatabase {
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    final dbFolder = await getApplicationSupportDirectory();
+    Directory dbFolder;
+    try {
+      dbFolder = await getApplicationSupportDirectory();
+    } catch (_) {
+      dbFolder = await getApplicationDocumentsDirectory();
+    }
     if (!await dbFolder.exists()) {
       await dbFolder.create(recursive: true);
     }
