@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,11 +12,13 @@ import 'screens/focus_history_screen.dart';
 import 'screens/focus_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/search_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/tasks_screen.dart';
 import 'widgets/add_expense_dialog.dart';
 import 'widgets/add_income_dialog.dart';
 import 'widgets/add_task_dialog.dart';
+import 'widgets/command_palette.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -62,10 +65,35 @@ final GoRouter appRouter = GoRouter(
           path: '/notifications',
           builder: (context, state) => const NotificationsScreen(),
         ),
+        GoRoute(
+          path: '/search',
+          builder: (context, state) => const SearchScreen(),
+        ),
       ],
     ),
   ],
 );
+
+// Global Intent Definitions
+class _IntentCommandPalette extends Intent {
+  const _IntentCommandPalette();
+}
+
+class _IntentAddTask extends Intent {
+  const _IntentAddTask();
+}
+
+class _IntentAddExpense extends Intent {
+  const _IntentAddExpense();
+}
+
+class _IntentAddIncome extends Intent {
+  const _IntentAddIncome();
+}
+
+class _IntentSearch extends Intent {
+  const _IntentSearch();
+}
 
 class AppNavigation extends ConsumerStatefulWidget {
   final Widget child;
@@ -84,7 +112,7 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
     if (location == '/finance') return 4;
     if (location == '/analytics') return 5;
     if (location == '/settings') return 6;
-    return 0; // Default to Home for '/', '/briefing', '/notifications'
+    return 0; // Default to Home for '/', '/briefing', '/notifications', '/search'
   }
 
   int mobileIndex(String location) {
@@ -95,7 +123,8 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
         location == '/focus-history' ||
         location == '/analytics' ||
         location == '/settings' ||
-        location == '/notifications') {
+        location == '/notifications' ||
+        location == '/search') {
       return 4; // 'More' selected for nested routes
     }
     return 0;
@@ -164,6 +193,14 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
+                ListTile(
+                  leading: const Icon(Icons.search),
+                  title: const Text('Global Search'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.go('/search');
+                  },
+                ),
                 ListTile(
                   leading: const Icon(Icons.timer_outlined),
                   title: const Text('Focus / Pomodoro'),
@@ -363,116 +400,179 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
     final unreadAsync = ref.watch(unreadNotificationCountProvider);
     final unreadCount = unreadAsync.value ?? 0;
 
-    if (isDesktop) {
-      return Scaffold(
-        body: Row(
-          children: [
-            NavigationRail(
-              selectedIndex: desktopIndex(location),
-              onDestinationSelected: navigateDesktopTo,
-              labelType: NavigationRailLabelType.all,
-              leading: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Column(
-                  children: [
-                    FloatingActionButton.small(
-                      tooltip: 'Quick Add',
-                      elevation: 0,
-                      onPressed: showQuickAdd,
-                      child: const Icon(Icons.add),
+    final childWidget = isDesktop
+        ? Scaffold(
+            body: Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: desktopIndex(location),
+                  onDestinationSelected: navigateDesktopTo,
+                  labelType: NavigationRailLabelType.all,
+                  leading: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      children: [
+                        FloatingActionButton.small(
+                          tooltip: 'Quick Add',
+                          elevation: 0,
+                          onPressed: showQuickAdd,
+                          child: const Icon(Icons.add),
+                        ),
+                        const SizedBox(height: 12),
+                        IconButton(
+                          tooltip: 'Search (Ctrl + F)',
+                          onPressed: () => context.go('/search'),
+                          icon: const Icon(Icons.search),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildNotificationBellIcon(unreadCount),
+                        const SizedBox(height: 8),
+                        IconButton(
+                          tooltip: 'Daily Briefing',
+                          onPressed: () => context.go('/briefing'),
+                          icon: const Icon(Icons.wb_sunny_outlined, size: 22),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    _buildNotificationBellIcon(unreadCount),
-                    const SizedBox(height: 8),
-                    IconButton(
-                      tooltip: 'Daily Briefing',
-                      onPressed: () => context.go('/briefing'),
-                      icon: const Icon(Icons.wb_sunny_outlined, size: 22),
+                  ),
+                  destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.dashboard_outlined),
+                      selectedIcon: Icon(Icons.dashboard),
+                      label: Text('Home'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.check_circle_outline),
+                      selectedIcon: Icon(Icons.check_circle),
+                      label: Text('Tasks'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.calendar_month_outlined),
+                      selectedIcon: Icon(Icons.calendar_month),
+                      label: Text('Calendar'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.timer_outlined),
+                      selectedIcon: Icon(Icons.timer),
+                      label: Text('Focus'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.account_balance_wallet_outlined),
+                      selectedIcon: Icon(Icons.account_balance_wallet),
+                      label: Text('Finance'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.bar_chart_outlined),
+                      selectedIcon: Icon(Icons.bar_chart),
+                      label: Text('Analytics'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.settings_outlined),
+                      selectedIcon: Icon(Icons.settings),
+                      label: Text('Settings'),
                     ),
                   ],
                 ),
-              ),
+                const VerticalDivider(width: 1),
+                Expanded(child: widget.child),
+              ],
+            ),
+          )
+        : Scaffold(
+            body: widget.child,
+            floatingActionButton: FloatingActionButton(
+              onPressed: showQuickAdd,
+              child: const Icon(Icons.add),
+            ),
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: mobileIndex(location),
+              onDestinationSelected: navigateMobileTo,
               destinations: const [
-                NavigationRailDestination(
+                NavigationDestination(
                   icon: Icon(Icons.dashboard_outlined),
                   selectedIcon: Icon(Icons.dashboard),
-                  label: Text('Home'),
+                  label: 'Home',
                 ),
-                NavigationRailDestination(
+                NavigationDestination(
                   icon: Icon(Icons.check_circle_outline),
                   selectedIcon: Icon(Icons.check_circle),
-                  label: Text('Tasks'),
+                  label: 'Tasks',
                 ),
-                NavigationRailDestination(
+                NavigationDestination(
                   icon: Icon(Icons.calendar_month_outlined),
                   selectedIcon: Icon(Icons.calendar_month),
-                  label: Text('Calendar'),
+                  label: 'Calendar',
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.timer_outlined),
-                  selectedIcon: Icon(Icons.timer),
-                  label: Text('Focus'),
-                ),
-                NavigationRailDestination(
+                NavigationDestination(
                   icon: Icon(Icons.account_balance_wallet_outlined),
                   selectedIcon: Icon(Icons.account_balance_wallet),
-                  label: Text('Finance'),
+                  label: 'Finance',
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.bar_chart_outlined),
-                  selectedIcon: Icon(Icons.bar_chart),
-                  label: Text('Analytics'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  selectedIcon: Icon(Icons.settings),
-                  label: Text('Settings'),
+                NavigationDestination(
+                  icon: Icon(Icons.more_horiz),
+                  selectedIcon: Icon(Icons.more_horiz),
+                  label: 'More',
                 ),
               ],
             ),
-            const VerticalDivider(width: 1),
-            Expanded(child: widget.child),
-          ],
-        ),
-      );
-    }
+          );
 
-    return Scaffold(
-      body: widget.child,
-      floatingActionButton: FloatingActionButton(
-        onPressed: showQuickAdd,
-        child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: mobileIndex(location),
-        onDestinationSelected: navigateMobileTo,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Home',
+    return Shortcuts(
+      shortcuts: <ShortcutActivator, Intent>{
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyK):
+            const _IntentCommandPalette(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyT):
+            const _IntentAddTask(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyE):
+            const _IntentAddExpense(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyI):
+            const _IntentAddIncome(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF):
+            const _IntentSearch(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          _IntentCommandPalette: CallbackAction<_IntentCommandPalette>(
+            onInvoke: (_) {
+              CommandPaletteDialog.show(context);
+              return null;
+            },
           ),
-          NavigationDestination(
-            icon: Icon(Icons.check_circle_outline),
-            selectedIcon: Icon(Icons.check_circle),
-            label: 'Tasks',
+          _IntentAddTask: CallbackAction<_IntentAddTask>(
+            onInvoke: (_) {
+              showDialog(
+                context: context,
+                builder: (_) => const AddTaskDialog(),
+              );
+              return null;
+            },
           ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: 'Calendar',
+          _IntentAddExpense: CallbackAction<_IntentAddExpense>(
+            onInvoke: (_) {
+              showDialog(
+                context: context,
+                builder: (_) => const AddExpenseDialog(),
+              );
+              return null;
+            },
           ),
-          NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet),
-            label: 'Finance',
+          _IntentAddIncome: CallbackAction<_IntentAddIncome>(
+            onInvoke: (_) {
+              showDialog(
+                context: context,
+                builder: (_) => const AddIncomeDialog(),
+              );
+              return null;
+            },
           ),
-          NavigationDestination(
-            icon: Icon(Icons.more_horiz),
-            selectedIcon: Icon(Icons.more_horiz),
-            label: 'More',
+          _IntentSearch: CallbackAction<_IntentSearch>(
+            onInvoke: (_) {
+              context.go('/search');
+              return null;
+            },
           ),
-        ],
+        },
+        child: childWidget,
       ),
     );
   }

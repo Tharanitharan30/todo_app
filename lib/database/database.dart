@@ -296,6 +296,12 @@ class AppDatabase extends _$AppDatabase {
     )..where((n) => n.read.equals(false))).watch().map((list) => list.length);
   }
 
+  Future<List<AppNotification>> getAllNotifications() {
+    return (select(
+      appNotifications,
+    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
+  }
+
   Future<int> addAppNotification(AppNotificationsCompanion item) {
     return into(appNotifications).insert(item);
   }

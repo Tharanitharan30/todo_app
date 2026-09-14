@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../database/database.dart';
+import '../providers/budget_provider.dart';
 import '../providers/database_provider.dart';
 import '../providers/finance_provider.dart';
 import '../providers/focus_provider.dart';
@@ -10,19 +11,22 @@ import '../providers/notification_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/task_provider.dart';
 import '../utils/currency_formatter.dart';
-import '../widgets/add_expense_dialog.dart';
-import '../widgets/add_income_dialog.dart';
 import '../widgets/add_task_dialog.dart';
-import '../widgets/task_card.dart';
+import '../widgets/dashboard_section.dart';
+import '../widgets/quick_actions.dart';
+import '../widgets/today_overview.dart';
+import '../widgets/today_schedule.dart';
+import 'task_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour >= 5 && hour < 12) return 'Good morning';
+    if (hour >= 12 && hour < 17) return 'Good afternoon';
+    if (hour >= 17 && hour < 22) return 'Good evening';
+    return 'Good night';
   }
 
   String _getFormattedDate() {
@@ -55,26 +59,44 @@ class HomeScreen extends ConsumerWidget {
     return '$dayName, $monthName ${now.day}';
   }
 
-  bool _isOverdue(Task task) {
-    if (task.status == 'completed' || task.dueDate == null) return false;
-    final now = DateTime.now();
-    return task.dueDate!.isBefore(now);
-  }
-
-  bool _isToday(DateTime? date) {
-    if (date == null) return false;
-    final now = DateTime.now();
-    return date.year == now.year &&
-        date.month == now.month &&
-        date.day == now.day;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tasksAsync = ref.watch(tasksProvider);
     final financeSummaryAsync = ref.watch(financeSummaryProvider);
     final settings = ref.watch(appSettingsProvider);
-    final database = ref.read(databaseProvider);
+    final budgetStatusAsync = ref.watch(budgetStatusListProvider);
+    final subscriptionsAsync = ref.watch(subscriptionsStreamProvider);
+    final focusSeconds = ref.watch(todayFocusTimeSecondsProvider);
+    final focusSessions = ref.watch(todayFocusSessionsProvider);
+    final unreadAsync = ref.watch(unreadNotificationCountProvider);
+    final unreadCount = unreadAsync.value ?? 0;
+
+    final theme = Theme.of(context);
+    final now = DateTime.now();
+
+    final allTasks = tasksAsync.value ?? [];
+    final overdueTasks = allTasks
+        .where(
+          (t) =>
+              t.status != 'completed' &&
+              t.dueDate != null &&
+              t.dueDate!.isBefore(DateTime(now.year, now.month, now.day)),
+        )
+        .toList();
+
+    final upcomingTasks = allTasks.where((t) {
+      if (t.status == 'completed' || t.dueDate == null) return false;
+      final dateOnly = DateTime(
+        t.dueDate!.year,
+        t.dueDate!.month,
+        t.dueDate!.day,
+      );
+      final todayOnly = DateTime(now.year, now.month, now.day);
+      return dateOnly.isAfter(todayOnly);
+    }).toList();
+    upcomingTasks.sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
+
+    final isNewUser = allTasks.isEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -93,602 +115,229 @@ class HomeScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Search everything',
+            onPressed: () => context.go('/search'),
+          ),
+          IconButton(
             icon: const Icon(Icons.wb_sunny_outlined),
             tooltip: 'Daily Briefing',
             onPressed: () => context.go('/briefing'),
           ),
-          Consumer(
-            builder: (context, ref, child) {
-              final unreadAsync = ref.watch(unreadNotificationCountProvider);
-              final count = unreadAsync.value ?? 0;
-              return Badge(
-                isLabelVisible: count > 0,
-                label: Text('$count'),
-                child: IconButton(
-                  icon: const Icon(Icons.notifications_outlined),
-                  tooltip: 'Notifications',
-                  onPressed: () => context.go('/notifications'),
-                ),
-              );
-            },
+          Badge(
+            isLabelVisible: unreadCount > 0,
+            label: Text('$unreadCount'),
+            child: IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              tooltip: 'Notifications',
+              onPressed: () => context.go('/notifications'),
+            ),
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: tasksAsync.when(
-        loading: () => const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 12),
-              Text(
-                'Loading dashboard...',
-                style: TextStyle(fontSize: 13, color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-        error: (err, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 40, color: Colors.red),
-              const SizedBox(height: 8),
-              const Text(
-                'Unable to load dashboard',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              ElevatedButton(
-                onPressed: () => ref.refresh(tasksProvider),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
-        data: (allTasks) {
-          final total = allTasks.length;
-          final completed = allTasks
-              .where((t) => t.status == 'completed')
-              .length;
-          final todayTasks = allTasks
-              .where((t) => _isToday(t.dueDate))
-              .toList();
-          final todayTotal = todayTasks.length;
-          final todayCompleted = todayTasks
-              .where((t) => t.status == 'completed')
-              .length;
-          final todayProgress = todayTotal == 0
-              ? 0.0
-              : todayCompleted / todayTotal;
-          final overallRate = total == 0
-              ? 0
-              : ((completed / total) * 100).round();
-
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 900;
-
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // QUICK STATS OVERVIEW CARDS
-                    _buildOverviewRow(
-                      context,
-                      todayCompleted: todayCompleted,
-                      todayTotal: todayTotal,
-                      todayProgress: todayProgress,
-                      overallRate: overallRate,
-                      financeSummaryAsync: financeSummaryAsync,
-                      currency: settings.currency,
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // QUICK ACTIONS BAR
-                    _buildQuickActionsBar(context),
-
-                    const SizedBox(height: 24),
-
-                    // MAIN DASHBOARD GRID
-                    if (isWide)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Left Column: Today's Tasks
-                          Expanded(
-                            flex: 3,
-                            child: _buildTodayTasksSection(
-                              context,
-                              database: database,
-                              todayTasks: todayTasks,
-                              todayCompleted: todayCompleted,
-                              todayTotal: todayTotal,
-                              todayProgress: todayProgress,
-                            ),
-                          ),
-                          const SizedBox(width: 20),
-
-                          // Right Column: Focus, Finance & Analytics Summary
-                          Expanded(
-                            flex: 2,
-                            child: Column(
-                              children: [
-                                _buildFocusSummaryCard(context, ref),
-                                const SizedBox(height: 16),
-                                _buildFinanceSummaryCard(
-                                  context,
-                                  financeSummaryAsync: financeSummaryAsync,
-                                  currency: settings.currency,
-                                ),
-                                const SizedBox(height: 16),
-                                _buildAllTasksOverviewCard(context, allTasks),
-                              ],
-                            ),
-                          ),
-                        ],
-                      )
-                    else
-                      Column(
-                        children: [
-                          _buildTodayTasksSection(
-                            context,
-                            database: database,
-                            todayTasks: todayTasks,
-                            todayCompleted: todayCompleted,
-                            todayTotal: todayTotal,
-                            todayProgress: todayProgress,
-                          ),
-                          const SizedBox(height: 20),
-                          _buildFocusSummaryCard(context, ref),
-                          const SizedBox(height: 16),
-                          _buildFinanceSummaryCard(
-                            context,
-                            financeSummaryAsync: financeSummaryAsync,
-                            currency: settings.currency,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildAllTasksOverviewCard(context, allTasks),
-                        ],
-                      ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildOverviewRow(
-    BuildContext context, {
-    required int todayCompleted,
-    required int todayTotal,
-    required double todayProgress,
-    required int overallRate,
-    required AsyncValue<FinanceSummary> financeSummaryAsync,
-    required String currency,
-  }) {
-    final theme = Theme.of(context);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 600;
-
-        final taskCard = Card(
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Today\'s Tasks',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    Icon(
-                      Icons.check_circle_outline,
-                      size: 18,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '$todayCompleted / $todayTotal',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: todayProgress,
-                    minHeight: 6,
-                    color: Colors.green,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-
-        final financeCard = Card(
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Net Balance',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const Icon(
-                      Icons.account_balance_wallet_outlined,
-                      size: 18,
-                      color: Colors.blue,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                financeSummaryAsync.when(
-                  loading: () => const Text(
-                    '...',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  error: (err, _) => const Text(
-                    '₹0',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  data: (summary) => Text(
-                    CurrencyFormatter.format(
-                      summary.balance,
-                      currencyCode: currency,
-                    ),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: summary.balance >= 0 ? Colors.green : Colors.red,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Current month balance',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-
-        final productivityCard = Card(
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Productivity',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const Icon(
-                      Icons.speed_rounded,
-                      size: 18,
-                      color: Colors.purple,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '$overallRate%',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Total completion rate',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-
-        if (isCompact) {
-          return Column(
-            children: [
-              taskCard,
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(child: financeCard),
-                  const SizedBox(width: 8),
-                  Expanded(child: productivityCard),
-                ],
-              ),
-            ],
-          );
-        }
-
-        return Row(
-          children: [
-            Expanded(child: taskCard),
-            const SizedBox(width: 12),
-            Expanded(child: financeCard),
-            const SizedBox(width: 12),
-            Expanded(child: productivityCard),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildQuickActionsBar(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quick Actions',
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => const AddTaskDialog(),
-                  );
-                },
-                icon: const Icon(Icons.add_task, size: 18),
-                label: const Text('Task'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => context.go('/focus'),
-                icon: const Icon(Icons.timer_outlined, size: 18),
-                label: const Text('Focus'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => const AddExpenseDialog(),
-                  );
-                },
-                icon: const Icon(Icons.remove_circle_outline, size: 18),
-                label: const Text('Expense'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => const AddIncomeDialog(),
-                  );
-                },
-                icon: const Icon(Icons.add_circle_outline, size: 18),
-                label: const Text('Income'),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTodayTasksSection(
-    BuildContext context, {
-    required AppDatabase database,
-    required List<Task> todayTasks,
-    required int todayCompleted,
-    required int todayTotal,
-    required double todayProgress,
-  }) {
-    final sortedTodayTasks = List<Task>.from(todayTasks);
-    sortedTodayTasks.sort((a, b) {
-      if (a.dueTime != null && b.dueTime != null) {
-        final aMins = a.dueTime!.hour * 60 + a.dueTime!.minute;
-        final bMins = b.dueTime!.hour * 60 + b.dueTime!.minute;
-        return aMins.compareTo(bMins);
-      } else if (a.dueTime != null) {
-        return -1;
-      } else if (b.dueTime != null) {
-        return 1;
-      }
-      return a.createdAt.compareTo(b.createdAt);
-    });
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Today's Schedule",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Row(
-              children: [
-                TextButton.icon(
-                  onPressed: () => context.go('/calendar'),
-                  icon: const Icon(Icons.calendar_month_outlined, size: 16),
-                  label: const Text('View Calendar'),
-                ),
-                const SizedBox(width: 4),
-                TextButton(
-                  onPressed: () => context.go('/tasks'),
-                  child: const Text('View All'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        if (todayTasks.isEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              child: Center(
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.wb_sunny_outlined,
-                      size: 40,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'No tasks scheduled for today',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Enjoy your day or add a task to get started!',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
-        else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: sortedTodayTasks.length,
-            itemBuilder: (context, index) {
-              final task = sortedTodayTasks[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: TaskCard(
-                  task: task,
-                  onComplete: () {
-                    if (task.status == 'completed') {
-                      database.uncompleteTask(task.id);
-                    } else {
-                      database.completeTask(task.id);
-                    }
-                  },
-                  onDelete: () {
-                    database.deleteTask(task.id);
-                  },
-                ),
-              );
-            },
-          ),
-      ],
-    );
-  }
-
-  Widget _buildFinanceSummaryCard(
-    BuildContext context, {
-    required AsyncValue<FinanceSummary> financeSummaryAsync,
-    required String currency,
-  }) {
-    final theme = Theme.of(context);
-
-    return Card(
-      child: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Finance Summary',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            // Search Bar Button Trigger
+            InkWell(
+              onTap: () => context.go('/search'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
-                TextButton.icon(
-                  onPressed: () => context.go('/analytics'),
-                  icon: const Icon(Icons.bar_chart, size: 16),
-                  label: const Text('View Analytics'),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: theme.dividerColor.withAlpha(50)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.search, color: theme.hintColor),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Search everything... (Ctrl + F)',
+                      style: TextStyle(color: theme.hintColor, fontSize: 14),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Ctrl + K',
+                        style: TextStyle(fontSize: 11, color: theme.hintColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            if (isNewUser) ...[
+              // EMPTY DASHBOARD STATE FOR NEW USER
+              _buildNewUserWelcomeCard(context),
+              const SizedBox(height: 20),
+            ],
+
+            // 1. TODAY OVERVIEW CARDS
+            DashboardSection(
+              title: 'Today\'s Overview',
+              icon: Icons.grid_view_rounded,
+              child: const TodayOverview(),
+            ),
+
+            // 2. QUICK ACTIONS
+            DashboardSection(
+              title: 'Quick Actions',
+              icon: Icons.flash_on_outlined,
+              child: const QuickActions(),
+            ),
+
+            // 3. TODAY'S SCHEDULE
+            DashboardSection(
+              title: 'Today\'s Schedule',
+              icon: Icons.schedule_outlined,
+              actionLabel: 'View Calendar',
+              onAction: () => context.go('/calendar'),
+              child: const TodaySchedule(),
+            ),
+
+            // 4. OVERDUE TASKS (if any)
+            if (overdueTasks.isNotEmpty)
+              DashboardSection(
+                title: 'Overdue Tasks (${overdueTasks.length})',
+                icon: Icons.warning_amber_rounded,
+                actionLabel: 'View All',
+                onAction: () => context.go('/tasks'),
+                child: _buildOverdueTasksCard(context, ref, overdueTasks),
+              ),
+
+            // UPCOMING TASKS (if any)
+            if (upcomingTasks.isNotEmpty)
+              DashboardSection(
+                title: 'Upcoming Tasks',
+                icon: Icons.upcoming_outlined,
+                actionLabel: 'View Tasks',
+                onAction: () => context.go('/tasks'),
+                child: _buildUpcomingTasksCard(
+                  context,
+                  upcomingTasks.take(3).toList(),
+                ),
+              ),
+
+            // 5. DAILY BRIEFING COMPACT CARD
+            DashboardSection(
+              title: 'Daily Briefing',
+              icon: Icons.wb_sunny_outlined,
+              actionLabel: 'Open Briefing',
+              onAction: () => context.go('/briefing'),
+              child: _buildDailyBriefingCard(
+                context,
+                allTasks: allTasks,
+                focusSeconds: focusSeconds,
+              ),
+            ),
+
+            // 6. CONDITIONAL BUDGET & SUBSCRIPTION WARNINGS
+            _buildConditionalAlertsSection(
+              context,
+              budgetStatusAsync: budgetStatusAsync,
+              subscriptionsAsync: subscriptionsAsync,
+            ),
+
+            // 7. FINANCE SNAPSHOT
+            DashboardSection(
+              title: 'Finance Snapshot',
+              icon: Icons.account_balance_wallet_outlined,
+              actionLabel: 'View Finance',
+              onAction: () => context.go('/finance'),
+              child: _buildFinanceSnapshotCard(
+                context,
+                financeSummaryAsync: financeSummaryAsync,
+                currency: settings.currency,
+              ),
+            ),
+
+            // 8. FOCUS SNAPSHOT
+            DashboardSection(
+              title: 'Focus Snapshot',
+              icon: Icons.timer_outlined,
+              actionLabel: 'Start Focus',
+              onAction: () => context.go('/focus'),
+              child: _buildFocusSnapshotCard(
+                context,
+                focusSeconds: focusSeconds,
+                sessionCount: focusSessions.length,
+                dailyGoalHours: settings.dailyFocusGoalHours,
+              ),
+            ),
+
+            // 9. PRODUCTIVITY SNAPSHOT
+            DashboardSection(
+              title: 'Productivity',
+              icon: Icons.bar_chart_outlined,
+              actionLabel: 'View Analytics',
+              onAction: () => context.go('/analytics'),
+              child: _buildProductivitySnapshotCard(
+                context,
+                allTasks: allTasks,
+                focusSeconds: focusSeconds,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewUserWelcomeCard(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.primaryContainer.withAlpha(100),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.auto_awesome,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'Welcome to Personal Command Center',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            const Divider(),
             const SizedBox(height: 8),
-            financeSummaryAsync.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (err, _) => Text('Error loading finance summary: $err'),
-              data: (summary) {
-                return Column(
-                  children: [
-                    _buildFinanceRow(
-                      context,
-                      label: 'Income',
-                      amount: summary.income,
-                      color: Colors.green,
-                      currency: currency,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildFinanceRow(
-                      context,
-                      label: 'Expenses',
-                      amount: summary.expenses,
-                      color: Colors.red,
-                      currency: currency,
-                    ),
-                    const Divider(height: 16),
-                    _buildFinanceRow(
-                      context,
-                      label: 'Monthly Savings',
-                      amount: summary.balance,
-                      color: theme.colorScheme.primary,
-                      currency: currency,
-                      isBold: true,
-                    ),
-                  ],
+            const Text(
+              'Start by adding your first task or logging your daily spending. Your data remains 100% private and stored locally on your device.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 14),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Add First Task'),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => const AddTaskDialog(),
                 );
               },
             ),
@@ -698,59 +347,136 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFinanceRow(
-    BuildContext context, {
-    required String label,
-    required double amount,
-    required Color color,
-    required String currency,
-    bool isBold = false,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-        Text(
-          CurrencyFormatter.format(amount, currencyCode: currency),
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-            color: color,
-          ),
-        ),
-      ],
+  Widget _buildOverdueTasksCard(
+    BuildContext context,
+    WidgetRef ref,
+    List<Task> overdueTasks,
+  ) {
+    return Card(
+      elevation: 0,
+      color: Colors.red.withAlpha(25),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.red.withAlpha(80)),
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: overdueTasks.length > 3 ? 3 : overdueTasks.length,
+        separatorBuilder: (ctx, idx) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final task = overdueTasks[index];
+          return ListTile(
+            leading: const Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 20,
+            ),
+            title: Text(
+              task.title,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text('Due: ${task.dueDate.toString().split(' ')[0]}'),
+            trailing: IconButton(
+              icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+              onPressed: () {
+                ref.read(databaseProvider).completeTask(task.id);
+              },
+            ),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => TaskDetailScreen(taskId: task.id),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildAllTasksOverviewCard(BuildContext context, List<Task> allTasks) {
-    final pending = allTasks.where((t) => t.status != 'completed').length;
-    final overdue = allTasks.where((t) => _isOverdue(t)).length;
-    final important = allTasks.where((t) => t.isImportant).length;
+  Widget _buildUpcomingTasksCard(BuildContext context, List<Task> upcoming) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: upcoming.length,
+        separatorBuilder: (ctx, idx) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final task = upcoming[index];
+          final dateStr = task.dueDate != null
+              ? '${task.dueDate!.day}/${task.dueDate!.month}'
+              : '';
+          return ListTile(
+            leading: const Icon(Icons.event_outlined, size: 20),
+            title: Text(task.title),
+            subtitle: Text('Due $dateStr · ${task.category}'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => TaskDetailScreen(taskId: task.id),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDailyBriefingCard(
+    BuildContext context, {
+    required List<Task> allTasks,
+    required int focusSeconds,
+  }) {
+    final now = DateTime.now();
+    final todayTasks = allTasks.where((t) {
+      if (t.dueDate == null) return false;
+      return t.dueDate!.year == now.year &&
+          t.dueDate!.month == now.month &&
+          t.dueDate!.day == now.day;
+    }).toList();
+
+    final highPriority = todayTasks.where((t) => t.priority == 'high').length;
+    final overdueCount = allTasks
+        .where(
+          (t) =>
+              t.status != 'completed' &&
+              t.dueDate != null &&
+              t.dueDate!.isBefore(DateTime(now.year, now.month, now.day)),
+        )
+        .length;
+
+    final focusMins = focusSeconds ~/ 60;
 
     return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Tasks Overview',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            Text(
+              'You have ${todayTasks.length} tasks scheduled for today.',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatPill('Pending', '$pending', Colors.orange),
-                _buildStatPill('Overdue', '$overdue', Colors.red),
-                _buildStatPill('Important', '$important', Colors.amber),
-              ],
+            const SizedBox(height: 4),
+            Text(
+              '• $highPriority are high priority.\n'
+              '• $overdueCount task(s) overdue.\n'
+              '• Focused for ${focusMins}m today.',
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.grey,
+                height: 1.4,
+              ),
             ),
           ],
         ),
@@ -758,113 +484,306 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatPill(String label, String value, Color color) {
+  Widget _buildConditionalAlertsSection(
+    BuildContext context, {
+    required AsyncValue<List<BudgetStatusInfo>> budgetStatusAsync,
+    required AsyncValue<List<Subscription>> subscriptionsAsync,
+  }) {
+    final budgetAlerts = <BudgetStatusInfo>[];
+    final budgetList = budgetStatusAsync.value ?? [];
+    for (final b in budgetList) {
+      if (b.percentage >= 80) {
+        budgetAlerts.add(b);
+      }
+    }
+
+    final upcomingSubs = <Subscription>[];
+    final subList = subscriptionsAsync.value ?? [];
+    final now = DateTime.now();
+    for (final s in subList) {
+      if (s.active) {
+        final days = s.nextBillingDate.difference(now).inDays;
+        if (days >= 0 && days <= 3) {
+          upcomingSubs.add(s);
+        }
+      }
+    }
+
+    if (budgetAlerts.isEmpty && upcomingSubs.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
+        if (budgetAlerts.isNotEmpty) ...[
+          DashboardSection(
+            title: 'Budget Alert',
+            icon: Icons.warning_amber_rounded,
+            actionLabel: 'View Budget',
+            onAction: () => context.go('/finance'),
+            child: Card(
+              elevation: 0,
+              color: Colors.orange.withAlpha(25),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.orange.withAlpha(100)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${budgetAlerts.first.budget.category} Budget Alert',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${budgetAlerts.first.percentage.toInt()}% used · ${CurrencyFormatter.format(budgetAlerts.first.spentAmount)} / ${CurrencyFormatter.format(budgetAlerts.first.budget.amount)}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    const Icon(Icons.warning, color: Colors.orange),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        ],
+        if (upcomingSubs.isNotEmpty) ...[
+          DashboardSection(
+            title: 'Upcoming Subscription Payment',
+            icon: Icons.subscriptions_outlined,
+            actionLabel: 'View Subscriptions',
+            onAction: () => context.go('/finance'),
+            child: Card(
+              elevation: 0,
+              color: Colors.purple.withAlpha(25),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.purple.withAlpha(100)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          upcomingSubs.first.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${CurrencyFormatter.format(upcomingSubs.first.amount)} · Due in ${upcomingSubs.first.nextBillingDate.difference(now).inDays} days',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    const Icon(Icons.payment, color: Colors.purple),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
 
-  Widget _buildFocusSummaryCard(BuildContext context, WidgetRef ref) {
+  Widget _buildFinanceSnapshotCard(
+    BuildContext context, {
+    required AsyncValue<FinanceSummary> financeSummaryAsync,
+    required String currency,
+  }) {
+    final summary =
+        financeSummaryAsync.value ??
+        const FinanceSummary(
+          income: 0,
+          expenses: 0,
+          balance: 0,
+          savingsRate: 0,
+        );
+
     final theme = Theme.of(context);
-    final totalSeconds = ref.watch(todayFocusTimeSecondsProvider);
-    final sessions = ref.watch(todayFocusSessionsProvider);
-    final settings = ref.watch(appSettingsProvider);
-    final completedSessions = sessions.where((s) => s.completed).length;
-
-    final hours = totalSeconds ~/ 3600;
-    final minutes = (totalSeconds % 3600) ~/ 60;
-    final formattedTime = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
-
-    final goalHours = settings.dailyFocusGoalHours;
-    final goalSeconds = (goalHours * 3600).toInt();
-    final progress = goalSeconds > 0
-        ? (totalSeconds / goalSeconds).clamp(0.0, 1.0)
-        : 0.0;
 
     return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.timer_outlined,
-                      size: 20,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Today\'s Focus',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-                TextButton(
-                  onPressed: () => context.go('/focus'),
-                  child: const Text(
-                    'Start Focus',
-                    style: TextStyle(fontSize: 13),
-                  ),
-                ),
-              ],
+            _buildFinanceMetric(
+              'Income',
+              CurrencyFormatter.format(summary.income),
+              Colors.green,
             ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
+            _buildFinanceMetric(
+              'Expenses',
+              CurrencyFormatter.format(summary.expenses),
+              Colors.red,
+            ),
+            _buildFinanceMetric(
+              'Savings',
+              CurrencyFormatter.format(summary.balance),
+              Colors.blue,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFinanceMetric(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFocusSnapshotCard(
+    BuildContext context, {
+    required int focusSeconds,
+    required int sessionCount,
+    required double dailyGoalHours,
+  }) {
+    final theme = Theme.of(context);
+    final focusHours = focusSeconds / 3600.0;
+    final goalPercentage =
+        (focusHours / (dailyGoalHours <= 0 ? 1 : dailyGoalHours) * 100)
+            .clamp(0, 100)
+            .toInt();
+
+    final mins = (focusSeconds % 3600) ~/ 60;
+    final hrs = focusSeconds ~/ 3600;
+    final timeStr = hrs > 0 ? '${hrs}h ${mins}m' : '${mins}m';
+
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Focus Today: $timeStr',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$sessionCount completed sessions · Daily Goal: ${dailyGoalHours.toInt()}h ($goalPercentage%)',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            CircularProgressIndicator(
+              value: (focusHours / (dailyGoalHours <= 0 ? 1 : dailyGoalHours))
+                  .clamp(0.0, 1.0),
+              backgroundColor: theme.dividerColor.withAlpha(50),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductivitySnapshotCard(
+    BuildContext context, {
+    required List<Task> allTasks,
+    required int focusSeconds,
+  }) {
+    final theme = Theme.of(context);
+    final completed = allTasks.where((t) => t.status == 'completed').length;
+    final total = allTasks.length;
+    final rate = total == 0 ? 0 : ((completed / total) * 100).toInt();
+
+    final hrs = focusSeconds ~/ 3600;
+    final mins = (focusSeconds % 3600) ~/ 60;
+    final timeStr = hrs > 0 ? '${hrs}h ${mins}m' : '${mins}m';
+
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Column(
               children: [
+                const Text(
+                  'Completion',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 4),
                 Text(
-                  formattedTime,
+                  '$rate%',
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  '$completedSessions sessions completed',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                  '$completed / $total tasks',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 6,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Daily Goal: ${goalHours.toStringAsFixed(1)}h (${(progress * 100).toInt()}%)',
-              style: TextStyle(
-                fontSize: 11,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+            Column(
+              children: [
+                const Text(
+                  'Focus Time',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  timeStr,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+                const Text(
+                  'today',
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ],
             ),
           ],
         ),
