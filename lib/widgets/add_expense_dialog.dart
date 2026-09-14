@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database.dart';
 import '../providers/database_provider.dart';
 import '../providers/finance_provider.dart';
+import '../providers/settings_provider.dart';
 import '../services/notification_service.dart';
+import '../utils/currency_formatter.dart';
 
 class AddExpenseDialog extends ConsumerStatefulWidget {
   final Expense? expense;
@@ -30,6 +32,7 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   @override
   void initState() {
     super.initState();
+    final settings = ref.read(appSettingsProvider);
     if (widget.expense != null) {
       _amountController.text = widget.expense!.amount.toString();
       _noteController.text = widget.expense!.note;
@@ -39,7 +42,10 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
       _isRecurring = widget.expense!.isRecurring;
     } else {
       _selectedCategory = expenseCategories.first;
-      _selectedPaymentMethod = paymentMethods.first;
+      _selectedPaymentMethod =
+          paymentMethods.contains(settings.defaultPaymentMethod)
+              ? settings.defaultPaymentMethod
+              : paymentMethods.first;
       _selectedDate = DateTime.now();
       _isRecurring = false;
     }
@@ -184,6 +190,8 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.expense != null;
+    final settings = ref.watch(appSettingsProvider);
+    final symbol = CurrencyFormatter.getSymbol(settings.currency);
 
     return AlertDialog(
       title: Text(isEdit ? 'Edit Expense' : 'Add Expense'),
@@ -200,10 +208,10 @@ class _AddExpenseDialogState extends ConsumerState<AddExpenseDialog> {
                 TextFormField(
                   controller: _amountController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: 'Amount (₹)',
-                    prefixText: '₹ ',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: 'Amount ($symbol)',
+                    prefixText: '$symbol ',
+                    border: const OutlineInputBorder(),
                   ),
                   validator: _validateAmount,
                   autofocus: true,

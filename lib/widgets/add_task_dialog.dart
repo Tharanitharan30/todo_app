@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/database.dart';
 import '../providers/database_provider.dart';
+import '../providers/settings_provider.dart';
 import '../services/notification_service.dart';
 
 class AddTaskDialog extends ConsumerStatefulWidget {
@@ -43,13 +44,15 @@ class _AddTaskDialogState extends ConsumerState<AddTaskDialog> {
   void initState() {
     super.initState();
     final t = widget.taskToEdit;
+    final settings = ref.read(appSettingsProvider);
+
     titleController = TextEditingController(text: t?.title ?? '');
     descriptionController = TextEditingController(text: t?.description ?? '');
     notesController = TextEditingController(text: t?.notes ?? '');
     tagsController = TextEditingController(text: t?.tags ?? '');
 
-    priority = t?.priority ?? 'medium';
-    category = t?.category ?? 'personal';
+    priority = t?.priority ?? settings.defaultTaskPriority;
+    category = t?.category ?? settings.defaultTaskCategory;
     isImportant = t?.isImportant ?? false;
     isRecurring = t?.isRecurring ?? false;
     recurrenceRule = t?.recurrenceRule ?? 'daily';

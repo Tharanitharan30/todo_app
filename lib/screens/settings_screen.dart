@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/notification_service.dart';
+import '../widgets/about_section.dart';
+import '../widgets/appearance_section.dart';
+import '../widgets/data_management_section.dart';
 import '../widgets/notification_settings_section.dart';
+import '../widgets/task_finance_settings_section.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -13,36 +17,88 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Settings'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const NotificationSettingsSection(),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 1,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 900;
+
+          if (isWide) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const AppearanceSection(),
+                        const SizedBox(height: 16),
+                        const TaskFinanceSettingsSection(),
+                        const SizedBox(height: 16),
+                        const AboutSection(),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const NotificationSettingsSection(),
+                        const SizedBox(height: 16),
+                        _buildPermissionCard(context),
+                        const SizedBox(height: 16),
+                        const DataManagementSection(),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              child: ListTile(
-                leading: const Icon(Icons.notifications_outlined),
-                title: const Text('Request Notification Permission'),
-                subtitle: const Text('Ensure app has system permission to display alerts'),
-                onTap: () async {
-                  await NotificationService().requestPermissions();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Notification permission requested'),
-                      ),
-                    );
-                  }
-                },
-              ),
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const AppearanceSection(),
+                const SizedBox(height: 16),
+                const NotificationSettingsSection(),
+                const SizedBox(height: 12),
+                _buildPermissionCard(context),
+                const SizedBox(height: 16),
+                const TaskFinanceSettingsSection(),
+                const SizedBox(height: 16),
+                const DataManagementSection(),
+                const SizedBox(height: 16),
+                const AboutSection(),
+              ],
             ),
-          ],
-        ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPermissionCard(BuildContext context) {
+    return Card(
+      elevation: 0,
+      child: ListTile(
+        leading: const Icon(Icons.notifications_active_outlined),
+        title: const Text('Request Notification Permission'),
+        subtitle: const Text(
+            'Ensure app has system permission to display daily briefing & alerts'),
+        onTap: () async {
+          await NotificationService().requestPermissions();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Notification permission requested'),
+              ),
+            );
+          }
+        },
       ),
     );
   }
