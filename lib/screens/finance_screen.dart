@@ -6,6 +6,10 @@ import '../widgets/add_expense_dialog.dart';
 import '../widgets/add_income_dialog.dart';
 import '../widgets/chart_card.dart';
 import '../widgets/finance_summary_card.dart';
+import '../widgets/neumorphic_button.dart';
+import '../widgets/neumorphic_container.dart';
+import '../widgets/neumorphic_icon_button.dart';
+import '../widgets/neumorphic_input.dart';
 import '../widgets/transaction_card.dart';
 import 'budget_screen.dart';
 import 'savings_screen.dart';
@@ -77,6 +81,7 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
   Widget _buildTransactionsTab() {
     final transactionsAsync = ref.watch(filteredTransactionsProvider);
     final activeCategory = ref.watch(financeCategoryFilterProvider);
+    final theme = Theme.of(context);
 
     final categories = ['All', ...expenseCategories];
 
@@ -97,40 +102,22 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
               child: Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
-                      ),
+                    child: NeumorphicButton(
+                      icon: Icons.add_circle_outline,
+                      label: '+ Expense',
+                      color: Colors.red,
+                      textColor: Colors.white,
                       onPressed: _openAddExpense,
-                      icon: const Icon(
-                        Icons.add_circle_outline,
-                        color: Colors.red,
-                      ),
-                      label: const Text(
-                        '+ Expense',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        foregroundColor: Colors.green,
-                        side: const BorderSide(color: Colors.green),
-                      ),
+                    child: NeumorphicButton(
+                      icon: Icons.add_circle_outline,
+                      label: '+ Income',
+                      color: Colors.green,
+                      textColor: Colors.white,
                       onPressed: _openAddIncome,
-                      icon: const Icon(
-                        Icons.add_circle_outline,
-                        color: Colors.green,
-                      ),
-                      label: const Text(
-                        '+ Income',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
                     ),
                   ),
                 ],
@@ -142,30 +129,23 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: TextField(
+              child: NeumorphicInput(
                 controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search transactions...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            ref
-                                .read(financeSearchQueryProvider.notifier)
-                                .setQuery('');
-                          },
-                        )
-                      : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
+                hintText: 'Search transactions...',
+                prefixIcon: Icons.search,
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? NeumorphicIconButton(
+                        icon: Icons.clear,
+                        size: 32,
+                        iconSize: 16,
+                        onPressed: () {
+                          _searchController.clear();
+                          ref
+                              .read(financeSearchQueryProvider.notifier)
+                              .setQuery('');
+                        },
+                      )
+                    : null,
                 onChanged: (val) {
                   ref.read(financeSearchQueryProvider.notifier).setQuery(val);
                 },
@@ -184,14 +164,40 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
                       activeCategory.toLowerCase() == cat.toLowerCase();
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      selected: isSelected,
-                      label: Text(cat),
-                      onSelected: (selected) {
+                    child: GestureDetector(
+                      onTap: () {
                         ref
                             .read(financeCategoryFilterProvider.notifier)
-                            .setCategory(selected ? cat : 'All');
+                            .setCategory(isSelected ? 'All' : cat);
                       },
+                      child: NeumorphicContainer(
+                        style: isSelected
+                            ? NeumorphicStyle.inset
+                            : NeumorphicStyle.raised,
+                        borderRadius: 12,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        color: isSelected
+                            ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                            : null,
+                        borderColor: isSelected
+                            ? theme.colorScheme.primary
+                            : null,
+                        child: Text(
+                          cat,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
                     ),
                   );
                 }).toList(),
@@ -223,23 +229,30 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
             ),
             data: (items) {
               if (items.isEmpty) {
-                return const SliverFillRemaining(
+                return SliverFillRemaining(
                   hasScrollBody: false,
                   child: Center(
                     child: Padding(
-                      padding: EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(32),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.receipt_long_outlined,
                             size: 64,
-                            color: Colors.grey,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.4,
+                            ),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Text(
                             'No transactions found for selected period',
-                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
+                              fontSize: 16,
+                            ),
                           ),
                         ],
                       ),
@@ -289,7 +302,9 @@ class _FinanceScreenState extends ConsumerState<FinanceScreen>
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: Colors.grey[700],
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.6,
+                            ),
                           ),
                         ),
                       ),

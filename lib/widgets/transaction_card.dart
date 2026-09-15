@@ -8,6 +8,7 @@ import '../providers/settings_provider.dart';
 import '../utils/currency_formatter.dart';
 import 'add_expense_dialog.dart';
 import 'add_income_dialog.dart';
+import 'neumorphic_card.dart';
 
 class TransactionCard extends ConsumerWidget {
   final TransactionItem item;
@@ -177,6 +178,7 @@ class TransactionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsProvider);
+    final theme = Theme.of(context);
     final isIncome = item.isIncome;
     final color = isIncome ? Colors.green : Colors.red;
     final iconData = _getCategoryIcon(item.title, isIncome);
@@ -185,122 +187,142 @@ class TransactionCard extends ConsumerWidget {
       currencyCode: settings.currency,
     );
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
+      child: NeumorphicCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        borderRadius: 12,
         onTap: () => _showDetails(context),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.12),
-          child: Icon(iconData, color: color, size: 20),
-        ),
-        title: Text(
-          item.title,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
           children: [
-            if (item.note.isNotEmpty)
-              Text(
-                item.note,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey[600], fontSize: 13),
-              ),
-            Row(
-              children: [
-                Text(
-                  '${item.date.day}/${item.date.month}/${item.date.year}',
-                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
-                ),
-                if (item.paymentMethod != null &&
-                    item.paymentMethod!.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 1,
+            CircleAvatar(
+              backgroundColor: color.withValues(alpha: 0.15),
+              child: Icon(iconData, color: color, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
                     ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      item.paymentMethod!,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
+                  ),
+                  if (item.note.isNotEmpty)
+                    Text(
+                      item.note,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
+                        fontSize: 13,
                       ),
                     ),
+                  Row(
+                    children: [
+                      Text(
+                        '${item.date.day}/${item.date.month}/${item.date.year}',
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
+                          fontSize: 12,
+                        ),
+                      ),
+                      if (item.paymentMethod != null &&
+                          item.paymentMethod!.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            item.paymentMethod!,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
-              ],
-            ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '${isIncome ? '+' : '-'} $formattedAmount',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
               ),
             ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, size: 20),
-              onSelected: (val) {
-                if (val == 'details') {
-                  _showDetails(context);
-                } else if (val == 'edit') {
-                  _onEdit(context, ref);
-                } else if (val == 'delete') {
-                  _onDelete(context, ref);
-                }
-              },
-              itemBuilder: (ctx) => [
-                const PopupMenuItem(
-                  value: 'details',
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 18),
-                      SizedBox(width: 8),
-                      Text('View details'),
-                    ],
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${isIncome ? '+' : '-'} $formattedAmount',
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
                   ),
                 ),
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit_outlined, size: 18),
-                      SizedBox(width: 8),
-                      Text('Edit'),
-                    ],
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    size: 20,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_outline, color: Colors.red, size: 18),
-                      SizedBox(width: 8),
-                      Text('Delete', style: TextStyle(color: Colors.red)),
-                    ],
-                  ),
+                  onSelected: (val) {
+                    if (val == 'details') {
+                      _showDetails(context);
+                    } else if (val == 'edit') {
+                      _onEdit(context, ref);
+                    } else if (val == 'delete') {
+                      _onDelete(context, ref);
+                    }
+                  },
+                  itemBuilder: (ctx) => [
+                    const PopupMenuItem(
+                      value: 'details',
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline, size: 18),
+                          SizedBox(width: 8),
+                          Text('View details'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, size: 18),
+                          SizedBox(width: 8),
+                          Text('Edit'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                            size: 18,
+                          ),
+                          SizedBox(width: 8),
+                          Text('Delete', style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

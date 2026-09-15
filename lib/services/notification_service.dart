@@ -218,32 +218,65 @@ class NotificationService {
   // Daily Briefing & Daily Summary
   // ----------------------------------------------------
 
+  static const int dailyBriefingNotificationId = 1000;
+
+  Future<void> cancelDailyBriefing() async {
+    await cancelNotification(dailyBriefingNotificationId);
+  }
+
   Future<void> scheduleDailyBriefing({
     required TimeOfDay time,
     required String body,
   }) async {
-    final now = DateTime.now();
-    var scheduledDate = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      time.hour,
-      time.minute,
-    );
+    if (!_initialized) await init();
 
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    try {
+      await cancelDailyBriefing();
+
+      final now = DateTime.now();
+      var scheduledDate = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        time.hour,
+        time.minute,
+      );
+
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+
+      const androidDetails = AndroidNotificationDetails(
+        'daily_briefing',
+        'Daily Briefing',
+        channelDescription: 'Daily briefing morning overview',
+        importance: Importance.high,
+        priority: Priority.high,
+      );
+      const linuxDetails = LinuxNotificationDetails();
+      const notificationDetails = NotificationDetails(
+        android: androidDetails,
+        linux: linuxDetails,
+      );
+
+      final tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local);
+
+      await _notificationsPlugin.zonedSchedule(
+        id: dailyBriefingNotificationId,
+        title: 'Good Morning ☀️',
+        body: body,
+        scheduledDate: tzDateTime,
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: 'daily_briefing',
+      );
+      debugPrint(
+        'Scheduled Daily Briefing (ID $dailyBriefingNotificationId) for $time (next: $tzDateTime)',
+      );
+    } catch (e) {
+      debugPrint('Error scheduling daily briefing: $e');
     }
-
-    await cancelNotification(40000);
-    await scheduleNotification(
-      id: 40000,
-      title: 'Good Morning ☀️',
-      body: body,
-      scheduledDate: scheduledDate,
-      payload: 'briefing',
-      type: 'daily_briefing',
-    );
   }
 
   Future<void> scheduleDailySummary({
@@ -377,7 +410,7 @@ class NotificationService {
           body: body,
         );
       } else {
-        await cancelNotification(40000);
+        await cancelDailyBriefing();
       }
 
       // 2. Reschedule Daily Summary

@@ -5,6 +5,7 @@ import '../database/database.dart';
 import '../providers/calendar_provider.dart';
 import '../providers/settings_provider.dart';
 import 'add_task_dialog.dart';
+import 'neumorphic_container.dart';
 
 class CalendarMonthView extends ConsumerWidget {
   const CalendarMonthView({super.key});
@@ -44,7 +45,6 @@ class CalendarMonthView extends ConsumerWidget {
         // WEEKDAY HEADERS
         Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          color: theme.colorScheme.surfaceContainerLow,
           child: Row(
             children: weekdayNames
                 .map(
@@ -57,7 +57,9 @@ class CalendarMonthView extends ConsumerWidget {
                           fontWeight: FontWeight.bold,
                           color: name == 'Sun' || name == 'Sat'
                               ? theme.colorScheme.error
-                              : theme.colorScheme.onSurfaceVariant,
+                              : theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
                         ),
                       ),
                     ),
@@ -72,12 +74,12 @@ class CalendarMonthView extends ConsumerWidget {
         // MONTH GRID
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(6),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
               childAspectRatio: 1.0,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
+              crossAxisSpacing: 6,
+              mainAxisSpacing: 6,
             ),
             itemCount: totalGridCells,
             itemBuilder: (context, index) {
@@ -159,8 +161,11 @@ class CalendarMonthView extends ConsumerWidget {
         .length;
     final importantCount = tasks.where((t) => t.isImportant).length;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
+    final cellStyle = isSelected
+        ? NeumorphicStyle.inset
+        : (isToday ? NeumorphicStyle.raised : NeumorphicStyle.flat);
+
+    return GestureDetector(
       onTap: () {
         ref.read(calendarStateProvider.notifier).setSelectedDate(date);
       },
@@ -170,23 +175,15 @@ class CalendarMonthView extends ConsumerWidget {
           builder: (_) => AddTaskDialog(initialDueDate: date),
         );
       },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: isToday
-              ? theme.colorScheme.primaryContainer.withValues(alpha: 0.4)
-              : (isSelected
-                    ? theme.colorScheme.surfaceContainerHighest
-                    : (isCurrentMonth
-                          ? null
-                          : theme.colorScheme.surfaceContainerLowest)),
-          border: isSelected
-              ? Border.all(color: theme.colorScheme.primary, width: 2)
-              : (isToday
-                    ? Border.all(color: theme.colorScheme.primary, width: 1)
-                    : null),
-        ),
+      child: NeumorphicContainer(
+        style: cellStyle,
+        borderRadius: 10,
         padding: const EdgeInsets.all(4),
+        borderColor: isSelected
+            ? theme.colorScheme.primary
+            : (isToday
+                  ? theme.colorScheme.primary.withValues(alpha: 0.5)
+                  : null),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -215,7 +212,9 @@ class CalendarMonthView extends ConsumerWidget {
                           ? theme.colorScheme.onPrimary
                           : (isCurrentMonth
                                 ? theme.colorScheme.onSurface
-                                : theme.colorScheme.outline),
+                                : theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.3,
+                                  )),
                     ),
                   ),
                 ),
@@ -257,11 +256,11 @@ class CalendarMonthView extends ConsumerWidget {
                       _dot(theme.colorScheme.primary),
                     if (tasks.length > 1) ...[
                       const SizedBox(width: 2),
-                      _dot(theme.colorScheme.outline),
+                      _dot(theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                     ],
                     if (tasks.length > 2) ...[
                       const SizedBox(width: 2),
-                      _dot(theme.colorScheme.outline),
+                      _dot(theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                     ],
                   ],
                 ),

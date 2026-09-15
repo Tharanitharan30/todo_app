@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'add_expense_dialog.dart';
 import 'add_income_dialog.dart';
 import 'add_task_dialog.dart';
+import 'neumorphic_button.dart';
 
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key});
@@ -12,13 +13,13 @@ class QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           _buildActionButton(
             context,
             icon: Icons.check_circle_outline,
             label: '+ Task',
-            color: Colors.blue,
             onTap: () {
               showDialog(
                 context: context,
@@ -26,12 +27,11 @@ class QuickActions extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           _buildActionButton(
             context,
             icon: Icons.account_balance_wallet_outlined,
             label: '+ Expense',
-            color: Colors.red,
             onTap: () {
               showDialog(
                 context: context,
@@ -39,12 +39,11 @@ class QuickActions extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           _buildActionButton(
             context,
             icon: Icons.attach_money,
             label: '+ Income',
-            color: Colors.green,
             onTap: () {
               showDialog(
                 context: context,
@@ -52,22 +51,20 @@ class QuickActions extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           _buildActionButton(
             context,
             icon: Icons.timer_outlined,
             label: 'Start Focus',
-            color: Colors.deepPurple,
             onTap: () {
               context.go('/focus');
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           _buildActionButton(
             context,
             icon: Icons.calendar_month_outlined,
             label: 'Open Calendar',
-            color: Colors.orange,
             onTap: () {
               context.go('/calendar');
             },
@@ -81,15 +78,14 @@ class QuickActions extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String label,
-    required Color color,
     required VoidCallback onTap,
   }) {
-    return ActionChip(
-      avatar: Icon(icon, size: 18, color: color),
-      label: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return NeumorphicButton(
+      icon: icon,
+      label: label,
       onPressed: onTap,
+      borderRadius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
     );
   }
 }

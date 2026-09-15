@@ -19,6 +19,9 @@ import 'widgets/add_expense_dialog.dart';
 import 'widgets/add_income_dialog.dart';
 import 'widgets/add_task_dialog.dart';
 import 'widgets/command_palette.dart';
+import 'widgets/neumorphic_card.dart';
+import 'widgets/neumorphic_container.dart';
+import 'widgets/neumorphic_icon_button.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -59,6 +62,10 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: '/briefing',
+          builder: (context, state) => const DailyBriefingScreen(),
+        ),
+        GoRoute(
+          path: '/daily-briefing',
           builder: (context, state) => const DailyBriefingScreen(),
         ),
         GoRoute(
@@ -180,6 +187,7 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       builder: (ctx) {
         return SafeArea(
           child: Padding(
@@ -192,42 +200,46 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
                   'More Options',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 12),
-                ListTile(
-                  leading: const Icon(Icons.search),
-                  title: const Text('Global Search'),
+                const SizedBox(height: 16),
+                _buildMoreTile(
+                  icon: Icons.search,
+                  title: 'Global Search',
                   onTap: () {
                     Navigator.pop(ctx);
                     context.go('/search');
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.timer_outlined),
-                  title: const Text('Focus / Pomodoro'),
+                const SizedBox(height: 8),
+                _buildMoreTile(
+                  icon: Icons.timer_outlined,
+                  title: 'Focus / Pomodoro',
                   onTap: () {
                     Navigator.pop(ctx);
                     context.go('/focus');
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.bar_chart_outlined),
-                  title: const Text('Analytics & Insights'),
+                const SizedBox(height: 8),
+                _buildMoreTile(
+                  icon: Icons.bar_chart_outlined,
+                  title: 'Analytics & Insights',
                   onTap: () {
                     Navigator.pop(ctx);
                     context.go('/analytics');
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.notifications_outlined),
-                  title: const Text('Notifications'),
+                const SizedBox(height: 8),
+                _buildMoreTile(
+                  icon: Icons.notifications_outlined,
+                  title: 'Notifications',
                   onTap: () {
                     Navigator.pop(ctx);
                     context.go('/notifications');
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.settings_outlined),
-                  title: const Text('Settings'),
+                const SizedBox(height: 8),
+                _buildMoreTile(
+                  icon: Icons.settings_outlined,
+                  title: 'Settings',
                   onTap: () {
                     Navigator.pop(ctx);
                     context.go('/settings');
@@ -241,11 +253,36 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
     );
   }
 
+  Widget _buildMoreTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return NeumorphicCard(
+      style: NeumorphicStyle.raised,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      onTap: onTap,
+      child: Row(
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+          const Spacer(),
+          const Icon(Icons.chevron_right, size: 18),
+        ],
+      ),
+    );
+  }
+
   void showQuickAdd() {
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
@@ -261,30 +298,8 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
                 const SizedBox(height: 16),
 
                 // ADD TASK
-                ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  tileColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest,
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check_circle_outline,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text(
-                    'Add Task',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text('Create a new task or reminder'),
+                NeumorphicCard(
+                  padding: const EdgeInsets.all(14),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     Future.delayed(const Duration(milliseconds: 150), () {
@@ -295,34 +310,45 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
                       );
                     });
                   },
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check_circle_outline,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Add Task',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            'Create a new task or reminder',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
                 // ADD EXPENSE
-                ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  tileColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest,
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.account_balance_wallet_outlined,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text(
-                    'Add Expense',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text('Log a new daily transaction'),
+                NeumorphicCard(
+                  padding: const EdgeInsets.all(14),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     Future.delayed(const Duration(milliseconds: 150), () {
@@ -333,34 +359,45 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
                       );
                     });
                   },
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Add Expense',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            'Log a new daily transaction',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
                 // ADD INCOME
-                ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  tileColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainerHighest,
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.attach_money,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text(
-                    'Add Income',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text('Record earnings or incoming funds'),
+                NeumorphicCard(
+                  padding: const EdgeInsets.all(14),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     Future.delayed(const Duration(milliseconds: 150), () {
@@ -371,6 +408,39 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
                       );
                     });
                   },
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.attach_money,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Add Income',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            'Record earnings or incoming funds',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -384,10 +454,10 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
     return Badge(
       isLabelVisible: unreadCount > 0,
       label: Text('$unreadCount'),
-      child: IconButton(
+      child: NeumorphicIconButton(
         tooltip: 'Notifications',
         onPressed: () => context.go('/notifications'),
-        icon: const Icon(Icons.notifications_outlined),
+        icon: Icons.notifications_outlined,
       ),
     );
   }
@@ -412,25 +482,28 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Column(
                       children: [
-                        FloatingActionButton.small(
+                        NeumorphicIconButton(
                           tooltip: 'Quick Add',
-                          elevation: 0,
                           onPressed: showQuickAdd,
-                          child: const Icon(Icons.add),
+                          icon: Icons.add,
+                          size: 46,
+                          iconSize: 22,
+                          color: Theme.of(context).colorScheme.primary,
+                          iconColor: Theme.of(context).colorScheme.onPrimary,
                         ),
-                        const SizedBox(height: 12),
-                        IconButton(
+                        const SizedBox(height: 14),
+                        NeumorphicIconButton(
                           tooltip: 'Search (Ctrl + F)',
                           onPressed: () => context.go('/search'),
-                          icon: const Icon(Icons.search),
+                          icon: Icons.search,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         _buildNotificationBellIcon(unreadCount),
-                        const SizedBox(height: 8),
-                        IconButton(
+                        const SizedBox(height: 10),
+                        NeumorphicIconButton(
                           tooltip: 'Daily Briefing',
                           onPressed: () => context.go('/briefing'),
-                          icon: const Icon(Icons.wb_sunny_outlined, size: 22),
+                          icon: Icons.wb_sunny_outlined,
                         ),
                       ],
                     ),
@@ -480,9 +553,15 @@ class _AppNavigationState extends ConsumerState<AppNavigation> {
           )
         : Scaffold(
             body: widget.child,
-            floatingActionButton: FloatingActionButton(
+            floatingActionButton: NeumorphicIconButton(
+              tooltip: 'Quick Add',
               onPressed: showQuickAdd,
-              child: const Icon(Icons.add),
+              icon: Icons.add,
+              size: 56,
+              iconSize: 26,
+              borderRadius: 28,
+              color: Theme.of(context).colorScheme.primary,
+              iconColor: Theme.of(context).colorScheme.onPrimary,
             ),
             bottomNavigationBar: NavigationBar(
               selectedIndex: mobileIndex(location),

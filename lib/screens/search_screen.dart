@@ -5,6 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/search_provider.dart';
+import '../widgets/neumorphic_button.dart';
+import '../widgets/neumorphic_card.dart';
+import '../widgets/neumorphic_container.dart';
+import '../widgets/neumorphic_icon_button.dart';
+import '../widgets/neumorphic_input.dart';
 import 'task_detail_screen.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -81,23 +86,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        titleSpacing: 0,
-        title: TextField(
+        titleSpacing: 16,
+        title: NeumorphicInput(
           controller: _controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: 'Search everything...',
-            border: InputBorder.none,
-            suffixIcon: _controller.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _controller.clear();
-                      ref.read(searchProvider.notifier).search('');
-                    },
-                  )
-                : null,
-          ),
+          hintText: 'Search everything...',
+          prefixIcon: Icons.search,
+          suffixIcon: _controller.text.isNotEmpty
+              ? NeumorphicIconButton(
+                  icon: Icons.clear,
+                  size: 30,
+                  iconSize: 16,
+                  onPressed: () {
+                    _controller.clear();
+                    ref.read(searchProvider.notifier).search('');
+                  },
+                )
+              : null,
           onChanged: _onQueryChanged,
           onSubmitted: (term) {
             if (term.trim().isNotEmpty) {
@@ -117,12 +121,38 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 final isSelected = searchState.categoryFilter == cat;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(cat.label),
-                    selected: isSelected,
-                    onSelected: (_) {
+                  child: GestureDetector(
+                    onTap: () {
                       ref.read(searchProvider.notifier).setCategoryFilter(cat);
                     },
+                    child: NeumorphicContainer(
+                      style: isSelected
+                          ? NeumorphicStyle.inset
+                          : NeumorphicStyle.raised,
+                      borderRadius: 12,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      color: isSelected
+                          ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                          : null,
+                      borderColor: isSelected
+                          ? theme.colorScheme.primary
+                          : null,
+                      child: Text(
+                        cat.label,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
                   ),
                 );
               }).toList(),
@@ -165,18 +195,44 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 6),
           ...recent.map(
-            (term) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.history, size: 20),
-              title: Text(term),
-              trailing: IconButton(
-                icon: const Icon(Icons.close, size: 18),
-                onPressed: () {
-                  ref.read(searchProvider.notifier).removeRecentSearch(term);
-                },
+            (term) => Container(
+              margin: const EdgeInsets.only(bottom: 6),
+              child: NeumorphicCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                borderRadius: 10,
+                onTap: () => _executeSearch(term),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.history,
+                      size: 18,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        term,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    NeumorphicIconButton(
+                      icon: Icons.close,
+                      size: 28,
+                      iconSize: 14,
+                      onPressed: () {
+                        ref
+                            .read(searchProvider.notifier)
+                            .removeRecentSearch(term);
+                      },
+                    ),
+                  ],
+                ),
               ),
-              onTap: () => _executeSearch(term),
             ),
           ),
           const SizedBox(height: 20),
@@ -191,37 +247,34 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           spacing: 10,
           runSpacing: 10,
           children: [
-            ActionChip(
-              avatar: const Icon(Icons.check_circle_outline, size: 18),
-              label: const Text('Tasks'),
+            NeumorphicButton(
+              icon: Icons.check_circle_outline,
+              label: 'Tasks',
               onPressed: () => context.go('/tasks'),
             ),
-            ActionChip(
-              avatar: const Icon(
-                Icons.account_balance_wallet_outlined,
-                size: 18,
-              ),
-              label: const Text('Expenses'),
+            NeumorphicButton(
+              icon: Icons.account_balance_wallet_outlined,
+              label: 'Expenses',
               onPressed: () => context.go('/finance'),
             ),
-            ActionChip(
-              avatar: const Icon(Icons.attach_money, size: 18),
-              label: const Text('Income'),
+            NeumorphicButton(
+              icon: Icons.attach_money,
+              label: 'Income',
               onPressed: () => context.go('/finance'),
             ),
-            ActionChip(
-              avatar: const Icon(Icons.calendar_month_outlined, size: 18),
-              label: const Text('Calendar'),
+            NeumorphicButton(
+              icon: Icons.calendar_month_outlined,
+              label: 'Calendar',
               onPressed: () => context.go('/calendar'),
             ),
-            ActionChip(
-              avatar: const Icon(Icons.timer_outlined, size: 18),
-              label: const Text('Focus'),
+            NeumorphicButton(
+              icon: Icons.timer_outlined,
+              label: 'Focus',
               onPressed: () => context.go('/focus'),
             ),
-            ActionChip(
-              avatar: const Icon(Icons.pie_chart_outline, size: 18),
-              label: const Text('Budgets'),
+            NeumorphicButton(
+              icon: Icons.pie_chart_outline,
+              label: 'Budgets',
               onPressed: () => context.go('/finance'),
             ),
           ],
@@ -232,11 +285,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           Center(
             child: Column(
               children: [
-                Icon(Icons.search, size: 48, color: theme.disabledColor),
+                Icon(
+                  Icons.search,
+                  size: 48,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Start typing to search everything.',
-                  style: TextStyle(color: theme.disabledColor),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
                 ),
               ],
             ),
@@ -255,65 +314,98 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             Icon(
               Icons.search_off_outlined,
               size: 48,
-              color: theme.disabledColor,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 12),
             Text(
               'No results found for "${state.query}"',
-              style: TextStyle(color: theme.disabledColor, fontSize: 15),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                fontSize: 15,
+              ),
             ),
           ],
         ),
       );
     }
 
-    return ListView.separated(
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
       itemCount: state.results.length,
-      separatorBuilder: (ctx, idx) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final item = state.results[index];
-        return ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              item.icon,
-              size: 20,
-              color: theme.colorScheme.onPrimaryContainer,
-            ),
-          ),
-          title: Text(
-            item.title,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          subtitle: Text(item.subtitle),
-          trailing: item.badgeText != null
-              ? Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: NeumorphicCard(
+            padding: const EdgeInsets.all(12),
+            borderRadius: 12,
+            onTap: () => _handleResultClick(item),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: theme.colorScheme.primary.withValues(
+                    alpha: 0.15,
                   ),
-                  decoration: BoxDecoration(
-                    color: (item.badgeColor ?? Colors.blue).withAlpha(30),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: (item.badgeColor ?? Colors.blue).withAlpha(100),
+                  radius: 18,
+                  child: Icon(
+                    item.icon,
+                    size: 18,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        item.subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (item.badgeText != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: (item.badgeColor ?? Colors.blue).withValues(
+                        alpha: 0.15,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: (item.badgeColor ?? Colors.blue).withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      item.badgeText!,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: item.badgeColor ?? Colors.blue,
+                      ),
                     ),
                   ),
-                  child: Text(
-                    item.badgeText!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: item.badgeColor ?? Colors.blue,
-                    ),
-                  ),
-                )
-              : null,
-          onTap: () => _handleResultClick(item),
+              ],
+            ),
+          ),
         );
       },
     );

@@ -12,7 +12,10 @@ Future<void> main() async {
     await NotificationService().init(
       onPayloadTap: (payload) {
         if (payload != null && payload.isNotEmpty) {
-          if (payload == 'briefing' || payload == 'summary') {
+          if (payload == 'briefing' ||
+              payload == 'daily_briefing' ||
+              payload == 'daily-briefing' ||
+              payload == 'summary') {
             appRouter.go('/briefing');
           } else if (payload.startsWith('task:')) {
             appRouter.go('/tasks');

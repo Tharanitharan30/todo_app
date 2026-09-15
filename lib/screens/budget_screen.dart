@@ -6,6 +6,10 @@ import '../database/database.dart';
 import '../providers/budget_provider.dart';
 import '../providers/database_provider.dart';
 import '../providers/finance_provider.dart';
+import '../widgets/neumorphic_button.dart';
+import '../widgets/neumorphic_card.dart';
+import '../widgets/neumorphic_icon_button.dart';
+import '../widgets/neumorphic_progress.dart';
 
 class BudgetScreen extends ConsumerWidget {
   const BudgetScreen({super.key});
@@ -37,10 +41,7 @@ class BudgetScreen extends ConsumerWidget {
                       initialValue: expenseCategories.contains(selectedCategory)
                           ? selectedCategory
                           : expenseCategories.first,
-                      decoration: const InputDecoration(
-                        labelText: 'Category',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Category'),
                       items: expenseCategories.map((cat) {
                         return DropdownMenuItem(value: cat, child: Text(cat));
                       }).toList(),
@@ -61,7 +62,6 @@ class BudgetScreen extends ConsumerWidget {
                       decoration: const InputDecoration(
                         labelText: 'Budget Amount (₹)',
                         prefixText: '₹ ',
-                        border: OutlineInputBorder(),
                       ),
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
@@ -104,18 +104,9 @@ class BudgetScreen extends ConsumerWidget {
 
                     if (context.mounted) {
                       Navigator.of(ctx).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            existing == null
-                                ? 'Budget created'
-                                : 'Budget updated',
-                          ),
-                        ),
-                      );
                     }
                   },
-                  child: Text(existing == null ? 'Create' : 'Save'),
+                  child: const Text('Save Budget'),
                 ),
               ],
             );
@@ -125,20 +116,6 @@ class BudgetScreen extends ConsumerWidget {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Exceeded':
-        return Colors.red;
-      case 'Critical':
-        return Colors.deepOrange;
-      case 'Warning':
-        return Colors.orange;
-      case 'Safe':
-      default:
-        return Colors.green;
-    }
-  }
-
   Future<void> _deleteBudget(
     BuildContext context,
     WidgetRef ref,
@@ -146,48 +123,68 @@ class BudgetScreen extends ConsumerWidget {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Budget'),
-        content: Text('Delete budget for ${budget.category}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Delete Budget'),
+          content: Text(
+            'Delete the monthly budget for ${budget.category} (₹${budget.amount.toStringAsFixed(0)})?',
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed == true) {
-      final db = ref.read(databaseProvider);
-      await db.deleteBudget(budget.id);
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Budget deleted')));
-      }
+      await ref.read(databaseProvider).deleteBudget(budget.id);
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'exceeded':
+        return Colors.red;
+      case 'warning':
+        return Colors.orange;
+      case 'on track':
+      default:
+        return Colors.green;
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final budgetStatusAsync = ref.watch(budgetStatusListProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Category Budgets'),
         actions: [
-          IconButton(
+          NeumorphicIconButton(
             tooltip: 'Add Budget',
             onPressed: () => _showAddEditBudgetDialog(context, ref),
-            icon: const Icon(Icons.add_chart),
+            icon: Icons.add_chart,
           ),
+          const SizedBox(width: 8),
         ],
+      ),
+      floatingActionButton: NeumorphicButton(
+        icon: Icons.add,
+        label: 'Add Budget',
+        isPrimary: true,
+        borderRadius: 24,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        onPressed: () => _showAddEditBudgetDialog(context, ref),
       ),
       body: budgetStatusAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -198,21 +195,25 @@ class BudgetScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.pie_chart_outline,
                     size: 64,
-                    color: Colors.grey,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'No budgets set for this month',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  FilledButton.icon(
+                  NeumorphicButton(
+                    icon: Icons.add,
+                    label: 'Set First Budget',
+                    isPrimary: true,
                     onPressed: () => _showAddEditBudgetDialog(context, ref),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Set First Budget'),
                   ),
                 ],
               ),
@@ -227,15 +228,12 @@ class BudgetScreen extends ConsumerWidget {
               final statusColor = _getStatusColor(info.status);
               final progress = (info.percentage / 100).clamp(0.0, 1.0);
 
-              return Card(
+              return Container(
                 margin: const EdgeInsets.only(bottom: 12),
-                elevation: 1,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: statusColor.withValues(alpha: 0.3)),
-                ),
-                child: Padding(
+                child: NeumorphicCard(
                   padding: const EdgeInsets.all(16),
+                  borderRadius: 14,
+                  borderColor: statusColor.withValues(alpha: 0.4),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -271,7 +269,13 @@ class BudgetScreen extends ConsumerWidget {
                                 ),
                               ),
                               PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert, size: 20),
+                                icon: Icon(
+                                  Icons.more_vert,
+                                  size: 20,
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                ),
                                 onSelected: (val) {
                                   if (val == 'edit') {
                                     _showAddEditBudgetDialog(
@@ -322,15 +326,11 @@ class BudgetScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 8,
-                          backgroundColor: Colors.grey.withValues(alpha: 0.2),
-                          color: statusColor,
-                        ),
+                      const SizedBox(height: 10),
+                      NeumorphicProgress(
+                        progress: progress,
+                        height: 10,
+                        color: statusColor,
                       ),
                     ],
                   ),
@@ -339,11 +339,6 @@ class BudgetScreen extends ConsumerWidget {
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddEditBudgetDialog(context, ref),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Budget'),
       ),
     );
   }

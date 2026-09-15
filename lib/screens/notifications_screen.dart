@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../database/database.dart';
 import '../providers/database_provider.dart';
 import '../providers/notification_provider.dart';
+import '../widgets/neumorphic_card.dart';
+import '../widgets/neumorphic_container.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
@@ -74,13 +76,14 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(appNotificationsProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notification History'),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
+            icon: Icon(Icons.more_vert, color: theme.colorScheme.onSurface),
             onSelected: (val) async {
               final db = ref.read(databaseProvider);
               if (val == 'read_all') {
@@ -150,15 +153,18 @@ class NotificationsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.notifications_none,
                     size: 64,
-                    color: Colors.grey,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'No notification history yet',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
                 ],
               ),
@@ -203,10 +209,12 @@ class NotificationsScreen extends ConsumerWidget {
                     padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
                     child: Text(
                       entry.key,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                   ),
@@ -230,60 +238,74 @@ class NotificationsScreen extends ConsumerWidget {
                         color: Colors.red,
                         child: const Icon(Icons.delete, color: Colors.white),
                       ),
-                      child: Card(
+                      child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
-                        elevation: item.read ? 0 : 1,
-                        color: item.read ? null : color.withValues(alpha: 0.05),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: item.read
-                                ? Theme.of(
-                                    context,
-                                  ).dividerColor.withValues(alpha: 0.2)
-                                : color.withValues(alpha: 0.4),
-                          ),
-                        ),
-                        child: ListTile(
-                          onTap: () => _onNotificationTap(context, ref, item),
-                          leading: CircleAvatar(
-                            backgroundColor: color.withValues(alpha: 0.15),
-                            child: Icon(icon, color: color, size: 20),
-                          ),
-                          title: Row(
+                        child: NeumorphicCard(
+                          padding: const EdgeInsets.all(12),
+                          borderRadius: 12,
+                          style: item.read
+                              ? NeumorphicStyle.flat
+                              : NeumorphicStyle.raised,
+                          borderColor: item.read
+                              ? null
+                              : color.withValues(alpha: 0.5),
+                          onTap: () =>
+                              _showNotificationDetail(context, ref, item),
+                          child: Row(
                             children: [
-                              Expanded(
-                                child: Text(
-                                  item.title,
-                                  style: TextStyle(
-                                    fontWeight: item.read
-                                        ? FontWeight.w500
-                                        : FontWeight.bold,
-                                  ),
-                                ),
+                              CircleAvatar(
+                                backgroundColor: color.withValues(alpha: 0.15),
+                                radius: 18,
+                                child: Icon(icon, color: color, size: 18),
                               ),
-                              if (!item.read)
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 2),
-                              Text(item.body),
-                              const SizedBox(height: 4),
-                              Text(
-                                timeStr,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            item.title,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: item.read
+                                                  ? FontWeight.w500
+                                                  : FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        if (!item.read)
+                                          Container(
+                                            width: 8,
+                                            height: 8,
+                                            decoration: BoxDecoration(
+                                              color: color,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      item.body,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      timeStr,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -299,5 +321,13 @@ class NotificationsScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  void _showNotificationDetail(
+    BuildContext context,
+    WidgetRef ref,
+    AppNotification item,
+  ) {
+    _onNotificationTap(context, ref, item);
   }
 }

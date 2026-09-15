@@ -5,6 +5,7 @@ import '../providers/finance_provider.dart';
 import '../providers/focus_provider.dart';
 import '../providers/task_provider.dart';
 import '../utils/currency_formatter.dart';
+import 'neumorphic_card.dart';
 
 class TodayOverview extends ConsumerWidget {
   const TodayOverview({super.key});
@@ -71,9 +72,9 @@ class TodayOverview extends ConsumerWidget {
           crossAxisCount: isWide ? 5 : 2,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: isWide ? 1.4 : 1.7,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: isWide ? 1.4 : 1.6,
           children: [
             _buildStatCard(
               context,
@@ -130,44 +131,43 @@ class TodayOverview extends ConsumerWidget {
     required Color color,
   }) {
     final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+    return NeumorphicCard(
+      padding: const EdgeInsets.all(12),
+      borderRadius: 14,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                Icon(icon, size: 18, color: color),
-              ],
+              ),
+              Icon(icon, size: 18, color: color),
+            ],
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 11,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -13,6 +13,11 @@ import '../providers/task_provider.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/add_task_dialog.dart';
 import '../widgets/dashboard_section.dart';
+import '../widgets/neumorphic_button.dart';
+import '../widgets/neumorphic_card.dart';
+import '../widgets/neumorphic_container.dart';
+import '../widgets/neumorphic_icon_button.dart';
+import '../widgets/notification_settings_section.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/today_overview.dart';
 import '../widgets/today_schedule.dart';
@@ -109,31 +114,36 @@ class HomeScreen extends ConsumerWidget {
             ),
             Text(
               _getFormattedDate(),
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 12,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
+          NeumorphicIconButton(
+            icon: Icons.search,
             tooltip: 'Search everything',
             onPressed: () => context.go('/search'),
           ),
-          IconButton(
-            icon: const Icon(Icons.wb_sunny_outlined),
+          const SizedBox(width: 8),
+          NeumorphicIconButton(
+            icon: Icons.wb_sunny_outlined,
             tooltip: 'Daily Briefing',
             onPressed: () => context.go('/briefing'),
           ),
+          const SizedBox(width: 8),
           Badge(
             isLabelVisible: unreadCount > 0,
             label: Text('$unreadCount'),
-            child: IconButton(
-              icon: const Icon(Icons.notifications_outlined),
+            child: NeumorphicIconButton(
+              icon: Icons.notifications_outlined,
               tooltip: 'Notifications',
               onPressed: () => context.go('/notifications'),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
       body: SingleChildScrollView(
@@ -141,41 +151,51 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Bar Button Trigger
-            InkWell(
+            // Search Bar Button Trigger (Inset Neumorphic Input Style)
+            GestureDetector(
               onTap: () => context.go('/search'),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
+              child: NeumorphicContainer(
+                style: NeumorphicStyle.inset,
+                borderRadius: 14,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
                 ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.dividerColor.withAlpha(50)),
-                ),
                 child: Row(
                   children: [
-                    Icon(Icons.search, color: theme.hintColor),
+                    Icon(
+                      Icons.search,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       'Search everything... (Ctrl + F)',
-                      style: TextStyle(color: theme.hintColor, fontSize: 14),
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
+                        fontSize: 14,
+                      ),
                     ),
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
+                        horizontal: 8,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         'Ctrl + K',
-                        style: TextStyle(fontSize: 11, color: theme.hintColor),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -245,6 +265,7 @@ class HomeScreen extends ConsumerWidget {
               onAction: () => context.go('/briefing'),
               child: _buildDailyBriefingCard(
                 context,
+                ref,
                 allTasks: allTasks,
                 focusSeconds: focusSeconds,
               ),
@@ -303,46 +324,43 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildNewUserWelcomeCard(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Theme.of(context).colorScheme.primaryContainer.withAlpha(100),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.auto_awesome,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  'Welcome to Personal Command Center',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
+    final theme = Theme.of(context);
+    return NeumorphicCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, color: theme.colorScheme.primary),
+              const SizedBox(width: 10),
+              const Text(
+                'Welcome to Personal Command Center',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start by adding your first task or logging your daily spending. Your data remains 100% private and stored locally on your device.',
+            style: TextStyle(
+              fontSize: 13,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Start by adding your first task or logging your daily spending. Your data remains 100% private and stored locally on your device.',
-              style: TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.add),
-              label: const Text('Add First Task'),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => const AddTaskDialog(),
-                );
-              },
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          NeumorphicButton(
+            icon: Icons.add,
+            label: 'Add First Task',
+            isPrimary: true,
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => const AddTaskDialog(),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -352,13 +370,9 @@ class HomeScreen extends ConsumerWidget {
     WidgetRef ref,
     List<Task> overdueTasks,
   ) {
-    return Card(
-      elevation: 0,
-      color: Colors.red.withAlpha(25),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.red.withAlpha(80)),
-      ),
+    return NeumorphicCard(
+      padding: EdgeInsets.zero,
+      borderColor: Colors.red.withValues(alpha: 0.5),
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -377,8 +391,11 @@ class HomeScreen extends ConsumerWidget {
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             subtitle: Text('Due: ${task.dueDate.toString().split(' ')[0]}'),
-            trailing: IconButton(
-              icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+            trailing: NeumorphicIconButton(
+              icon: Icons.check,
+              size: 34,
+              iconSize: 18,
+              iconColor: Colors.green,
               onPressed: () {
                 ref.read(databaseProvider).completeTask(task.id);
               },
@@ -397,11 +414,8 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildUpcomingTasksCard(BuildContext context, List<Task> upcoming) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return NeumorphicCard(
+      padding: EdgeInsets.zero,
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -430,11 +444,30 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildDailyBriefingCard(
-    BuildContext context, {
+    BuildContext context,
+    WidgetRef ref, {
     required List<Task> allTasks,
     required int focusSeconds,
   }) {
+    final settings = ref.watch(appSettingsProvider);
     final now = DateTime.now();
+
+    String nextBriefingStr = 'Disabled';
+    if (settings.dailyBriefingEnabled) {
+      var briefingDt = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        settings.dailyBriefingHour,
+        settings.dailyBriefingMinute,
+      );
+      final isToday = briefingDt.isAfter(now);
+      final timeStr = NotificationSettingsSection.formatTimeOfDay(
+        settings.dailyBriefingTime,
+      );
+      nextBriefingStr = isToday ? 'Today at $timeStr' : 'Tomorrow at $timeStr';
+    }
+
     final todayTasks = allTasks.where((t) {
       if (t.dueDate == null) return false;
       return t.dueDate!.year == now.year &&
@@ -453,33 +486,54 @@ class HomeScreen extends ConsumerWidget {
         .length;
 
     final focusMins = focusSeconds ~/ 60;
+    final theme = Theme.of(context);
 
-    return Card(
-      elevation: 0,
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'You have ${todayTasks.length} tasks scheduled for today.',
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '• $highPriority are high priority.\n'
-              '• $overdueCount task(s) overdue.\n'
-              '• Focused for ${focusMins}m today.',
-              style: const TextStyle(
-                fontSize: 13,
-                color: Colors.grey,
-                height: 1.4,
+    return NeumorphicCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Next briefing: $nextBriefingStr',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: settings.dailyBriefingEnabled
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
               ),
+              NeumorphicButton(
+                icon: Icons.open_in_new,
+                label: 'Open',
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                onPressed: () => context.go('/briefing'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'You have ${todayTasks.length} tasks scheduled for today.',
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '• $highPriority are high priority.\n'
+            '• $overdueCount task(s) overdue.\n'
+            '• Focused for ${focusMins}m today.',
+            style: TextStyle(
+              fontSize: 13,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              height: 1.4,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -521,38 +575,31 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.warning_amber_rounded,
             actionLabel: 'View Budget',
             onAction: () => context.go('/finance'),
-            child: Card(
-              elevation: 0,
-              color: Colors.orange.withAlpha(25),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.orange.withAlpha(100)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${budgetAlerts.first.budget.category} Budget Alert',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange,
-                          ),
+            child: NeumorphicCard(
+              padding: const EdgeInsets.all(14),
+              borderColor: Colors.orange.withValues(alpha: 0.6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${budgetAlerts.first.budget.category} Budget Alert',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${budgetAlerts.first.percentage.toInt()}% used · ${CurrencyFormatter.format(budgetAlerts.first.spentAmount)} / ${CurrencyFormatter.format(budgetAlerts.first.budget.amount)}',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    const Icon(Icons.warning, color: Colors.orange),
-                  ],
-                ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${budgetAlerts.first.percentage.toInt()}% used · ${CurrencyFormatter.format(budgetAlerts.first.spentAmount)} / ${CurrencyFormatter.format(budgetAlerts.first.budget.amount)}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const Icon(Icons.warning, color: Colors.orange),
+                ],
               ),
             ),
           ),
@@ -563,38 +610,31 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.subscriptions_outlined,
             actionLabel: 'View Subscriptions',
             onAction: () => context.go('/finance'),
-            child: Card(
-              elevation: 0,
-              color: Colors.purple.withAlpha(25),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.purple.withAlpha(100)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          upcomingSubs.first.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple,
-                          ),
+            child: NeumorphicCard(
+              padding: const EdgeInsets.all(14),
+              borderColor: Colors.purple.withValues(alpha: 0.6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        upcomingSubs.first.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${CurrencyFormatter.format(upcomingSubs.first.amount)} · Due in ${upcomingSubs.first.nextBillingDate.difference(now).inDays} days',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    const Icon(Icons.payment, color: Colors.purple),
-                  ],
-                ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${CurrencyFormatter.format(upcomingSubs.first.amount)} · Due in ${upcomingSubs.first.nextBillingDate.difference(now).inDays} days',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const Icon(Icons.payment, color: Colors.purple),
+                ],
               ),
             ),
           ),
@@ -617,42 +657,50 @@ class HomeScreen extends ConsumerWidget {
           savingsRate: 0,
         );
 
-    final theme = Theme.of(context);
-
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildFinanceMetric(
-              'Income',
-              CurrencyFormatter.format(summary.income),
-              Colors.green,
-            ),
-            _buildFinanceMetric(
-              'Expenses',
-              CurrencyFormatter.format(summary.expenses),
-              Colors.red,
-            ),
-            _buildFinanceMetric(
-              'Savings',
-              CurrencyFormatter.format(summary.balance),
-              Colors.blue,
-            ),
-          ],
-        ),
+    return NeumorphicCard(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildFinanceMetric(
+            context,
+            'Income',
+            CurrencyFormatter.format(summary.income),
+            Colors.green,
+          ),
+          _buildFinanceMetric(
+            context,
+            'Expenses',
+            CurrencyFormatter.format(summary.expenses),
+            Colors.red,
+          ),
+          _buildFinanceMetric(
+            context,
+            'Savings',
+            CurrencyFormatter.format(summary.balance),
+            Colors.blue,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildFinanceMetric(String label, String value, Color color) {
+  Widget _buildFinanceMetric(
+    BuildContext context,
+    String label,
+    String value,
+    Color color,
+  ) {
+    final theme = Theme.of(context);
     return Column(
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
         const SizedBox(height: 4),
         Text(
           value,
@@ -683,40 +731,38 @@ class HomeScreen extends ConsumerWidget {
     final hrs = focusSeconds ~/ 3600;
     final timeStr = hrs > 0 ? '${hrs}h ${mins}m' : '${mins}m';
 
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Focus Today: $timeStr',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+    return NeumorphicCard(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Focus Today: $timeStr',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$sessionCount completed sessions · Daily Goal: ${dailyGoalHours.toInt()}h ($goalPercentage%)',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$sessionCount completed sessions · Daily Goal: ${dailyGoalHours.toInt()}h ($goalPercentage%)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            CircularProgressIndicator(
-              value: (focusHours / (dailyGoalHours <= 0 ? 1 : dailyGoalHours))
-                  .clamp(0.0, 1.0),
-              backgroundColor: theme.dividerColor.withAlpha(50),
-            ),
-          ],
-        ),
+          ),
+          CircularProgressIndicator(
+            value: (focusHours / (dailyGoalHours <= 0 ? 1 : dailyGoalHours))
+                .clamp(0.0, 1.0),
+            backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+          ),
+        ],
       ),
     );
   }
@@ -735,58 +781,65 @@ class HomeScreen extends ConsumerWidget {
     final mins = (focusSeconds % 3600) ~/ 60;
     final timeStr = hrs > 0 ? '${hrs}h ${mins}m' : '${mins}m';
 
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Column(
-              children: [
-                const Text(
-                  'Completion',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+    return NeumorphicCard(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Column(
+            children: [
+              Text(
+                'Completion',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '$rate%',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$rate%',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                Text(
-                  '$completed / $total tasks',
-                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+              Text(
+                '$completed / $total tasks',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
-              ],
-            ),
-            Column(
-              children: [
-                const Text(
-                  'Focus Time',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          Column(
+            children: [
+              Text(
+                'Focus Time',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  timeStr,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                timeStr,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
                 ),
-                const Text(
-                  'today',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+              Text(
+                'today',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/database_provider.dart';
 import '../providers/task_provider.dart';
 import '../widgets/add_task_dialog.dart';
+import '../widgets/neumorphic_button.dart';
+import '../widgets/neumorphic_container.dart';
+import '../widgets/neumorphic_icon_button.dart';
+import '../widgets/neumorphic_input.dart';
 import '../widgets/task_card.dart';
 
 class TasksScreen extends ConsumerWidget {
@@ -41,6 +45,7 @@ class TasksScreen extends ConsumerWidget {
 
     final currentFilter = ref.watch(taskFilterProvider);
     final currentSort = ref.watch(taskSortProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -58,9 +63,10 @@ class TasksScreen extends ConsumerWidget {
                     .length;
                 return Text(
                   '$pendingCount pending • $completedCount completed',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 );
               },
@@ -71,7 +77,7 @@ class TasksScreen extends ConsumerWidget {
         ),
         actions: [
           PopupMenuButton<TaskSort>(
-            icon: const Icon(Icons.sort),
+            icon: Icon(Icons.sort, color: theme.colorScheme.onSurface),
             tooltip: 'Sort tasks',
             initialValue: currentSort,
             onSelected: (sort) {
@@ -96,49 +102,47 @@ class TasksScreen extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(width: 8),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: NeumorphicButton(
+        icon: Icons.add,
+        label: 'Add Task',
+        isPrimary: true,
+        borderRadius: 24,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         onPressed: () => showAddTask(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Task'),
       ),
       body: Column(
         children: [
-          // Search Bar
+          // Neumorphic Inset Search Bar
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: TextField(
+            child: NeumorphicInput(
               controller: searchController,
-              decoration: InputDecoration(
-                hintText: 'Search tasks...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          searchController.clear();
-                          ref
-                              .read(taskSearchQueryProvider.notifier)
-                              .setQuery('');
-                        },
-                      )
-                    : null,
-                isDense: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+              hintText: 'Search tasks...',
+              prefixIcon: Icons.search,
+              suffixIcon: searchController.text.isNotEmpty
+                  ? NeumorphicIconButton(
+                      icon: Icons.clear,
+                      size: 32,
+                      iconSize: 16,
+                      onPressed: () {
+                        searchController.clear();
+                        ref.read(taskSearchQueryProvider.notifier).setQuery('');
+                      },
+                    )
+                  : null,
               onChanged: (val) {
                 ref.read(taskSearchQueryProvider.notifier).setQuery(val);
               },
             ),
           ),
 
-          // Filters Bar
+          // Filters Bar with Neumorphic Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: TaskFilter.values.map((filter) {
                 final isSelected = currentFilter == filter;
@@ -169,14 +173,38 @@ class TasksScreen extends ConsumerWidget {
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(label),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        ref.read(taskFilterProvider.notifier).setFilter(filter);
-                      }
+                  child: GestureDetector(
+                    onTap: () {
+                      ref.read(taskFilterProvider.notifier).setFilter(filter);
                     },
+                    child: NeumorphicContainer(
+                      style: isSelected
+                          ? NeumorphicStyle.inset
+                          : NeumorphicStyle.raised,
+                      borderRadius: 12,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      color: isSelected
+                          ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                          : null,
+                      borderColor: isSelected
+                          ? theme.colorScheme.primary
+                          : null,
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
                   ),
                 );
               }).toList(),
@@ -225,7 +253,7 @@ class TasksScreen extends ConsumerWidget {
                           Icon(
                             Icons.task_alt,
                             size: 80,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: theme.colorScheme.primary,
                           ),
                           const SizedBox(height: 20),
                           const Text(
@@ -236,15 +264,21 @@ class TasksScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'Create your first task to get started.',
                             textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 24),
-                          FilledButton.icon(
+                          NeumorphicButton(
+                            icon: Icons.add,
+                            label: 'Create Task',
+                            isPrimary: true,
                             onPressed: () => showAddTask(context),
-                            icon: const Icon(Icons.add),
-                            label: const Text('Create Task'),
                           ),
                         ],
                       ),

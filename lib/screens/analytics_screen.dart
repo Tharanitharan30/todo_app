@@ -158,10 +158,6 @@ class AnalyticsScreen extends ConsumerWidget {
                     const ProductivityOverviewCard(),
                     const SizedBox(height: 16),
 
-                    // Key Highlights Grid
-                    const KeyHighlightsCard(),
-                    const SizedBox(height: 16),
-
                     // Responsive Section Layout
                     if (isDesktop)
                       Row(
@@ -192,8 +188,6 @@ class AnalyticsScreen extends ConsumerWidget {
                                 SizedBox(height: 16),
                                 PriorityAnalysisCard(),
                                 SizedBox(height: 16),
-                                FinanceOverviewCard(),
-                                SizedBox(height: 16),
                                 ExpenseCategoryChartCard(),
                                 SizedBox(height: 16),
                                 MonthlyExpensesChartCard(),
@@ -220,8 +214,6 @@ class AnalyticsScreen extends ConsumerWidget {
                           PriorityAnalysisCard(),
                           SizedBox(height: 16),
                           TaskStatusChartCard(),
-                          SizedBox(height: 16),
-                          FinanceOverviewCard(),
                           SizedBox(height: 16),
                           ExpenseCategoryChartCard(),
                           SizedBox(height: 16),

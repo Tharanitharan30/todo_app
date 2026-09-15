@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/finance_provider.dart';
+import 'neumorphic_card.dart';
+import 'neumorphic_container.dart';
 
 class FinanceSummaryCard extends ConsumerWidget {
   const FinanceSummaryCard({super.key});
@@ -41,145 +43,163 @@ class FinanceSummaryCard extends ConsumerWidget {
     final summaryAsync = ref.watch(financeSummaryProvider);
     final activeFilter = ref.watch(financeDateFilterProvider);
     final customRange = ref.watch(financeCustomDateRangeProvider);
+    final theme = Theme.of(context);
 
-    return Card(
+    return NeumorphicCard(
       margin: const EdgeInsets.all(16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title & Period Selector Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Finance',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                PopupMenuButton<FinanceDateFilter>(
-                  initialValue: activeFilter,
-                  onSelected: (filter) {
-                    if (filter == FinanceDateFilter.customRange) {
-                      _selectCustomRange(context, ref);
-                    } else {
-                      ref
-                          .read(financeDateFilterProvider.notifier)
-                          .setFilter(filter);
-                    }
-                  },
-                  child: Chip(
-                    avatar: const Icon(Icons.calendar_today, size: 16),
-                    label: Text(
-                      activeFilter == FinanceDateFilter.customRange &&
-                              customRange != null
-                          ? '${customRange.start.day}/${customRange.start.month} - ${customRange.end.day}/${customRange.end.month}'
-                          : _filterLabel(activeFilter),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
+      padding: const EdgeInsets.all(20),
+      borderRadius: 16,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title & Period Selector Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Finance',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              PopupMenuButton<FinanceDateFilter>(
+                initialValue: activeFilter,
+                onSelected: (filter) {
+                  if (filter == FinanceDateFilter.customRange) {
+                    _selectCustomRange(context, ref);
+                  } else {
+                    ref
+                        .read(financeDateFilterProvider.notifier)
+                        .setFilter(filter);
+                  }
+                },
+                child: NeumorphicContainer(
+                  style: NeumorphicStyle.raised,
+                  borderRadius: 12,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: FinanceDateFilter.today,
-                      child: Text('Today'),
-                    ),
-                    const PopupMenuItem(
-                      value: FinanceDateFilter.thisWeek,
-                      child: Text('This Week'),
-                    ),
-                    const PopupMenuItem(
-                      value: FinanceDateFilter.thisMonth,
-                      child: Text('This Month'),
-                    ),
-                    const PopupMenuItem(
-                      value: FinanceDateFilter.lastMonth,
-                      child: Text('Last Month'),
-                    ),
-                    const PopupMenuItem(
-                      value: FinanceDateFilter.customRange,
-                      child: Text('Custom Range'),
-                    ),
-                  ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        activeFilter == FinanceDateFilter.customRange &&
+                                customRange != null
+                            ? '${customRange.start.day}/${customRange.start.month} - ${customRange.end.day}/${customRange.end.month}'
+                            : _filterLabel(activeFilter),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            summaryAsync.when(
-              loading: () => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
-                ),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: FinanceDateFilter.today,
+                    child: Text('Today'),
+                  ),
+                  const PopupMenuItem(
+                    value: FinanceDateFilter.thisWeek,
+                    child: Text('This Week'),
+                  ),
+                  const PopupMenuItem(
+                    value: FinanceDateFilter.thisMonth,
+                    child: Text('This Month'),
+                  ),
+                  const PopupMenuItem(
+                    value: FinanceDateFilter.lastMonth,
+                    child: Text('Last Month'),
+                  ),
+                  const PopupMenuItem(
+                    value: FinanceDateFilter.customRange,
+                    child: Text('Custom Range'),
+                  ),
+                ],
               ),
-              error: (err, _) => Text(
-                'Error loading summary: $err',
-                style: const TextStyle(color: Colors.red),
-              ),
-              data: (summary) {
-                final balanceColor = summary.balance >= 0
-                    ? Colors.green[700]
-                    : Colors.red[700];
+            ],
+          ),
+          const SizedBox(height: 16),
 
-                return Column(
-                  children: [
-                    // Grid 2x2 of metrics
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _summaryTile(
-                            context,
-                            title: 'Income',
-                            amount: '₹ ${summary.income.toStringAsFixed(0)}',
-                            color: Colors.green,
-                            icon: Icons.arrow_downward,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _summaryTile(
-                            context,
-                            title: 'Expenses',
-                            amount: '₹ ${summary.expenses.toStringAsFixed(0)}',
-                            color: Colors.red,
-                            icon: Icons.arrow_upward,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _summaryTile(
-                            context,
-                            title: 'Balance',
-                            amount: '₹ ${summary.balance.toStringAsFixed(0)}',
-                            color: balanceColor!,
-                            icon: Icons.account_balance_wallet,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _summaryTile(
-                            context,
-                            title: 'Savings',
-                            amount:
-                                '₹ ${summary.balance > 0 ? summary.balance.toStringAsFixed(0) : "0"} (${summary.savingsRate.toStringAsFixed(0)}%)',
-                            color: Colors.blue,
-                            icon: Icons.savings_outlined,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              },
+          summaryAsync.when(
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
             ),
-          ],
-        ),
+            error: (err, _) => Text(
+              'Error loading summary: $err',
+              style: const TextStyle(color: Colors.red),
+            ),
+            data: (summary) {
+              final balanceColor = summary.balance >= 0
+                  ? Colors.green
+                  : Colors.red;
+
+              return Column(
+                children: [
+                  // Grid 2x2 of metrics
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _summaryTile(
+                          context,
+                          title: 'Income',
+                          amount: '₹ ${summary.income.toStringAsFixed(0)}',
+                          color: Colors.green,
+                          icon: Icons.arrow_downward,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _summaryTile(
+                          context,
+                          title: 'Expenses',
+                          amount: '₹ ${summary.expenses.toStringAsFixed(0)}',
+                          color: Colors.red,
+                          icon: Icons.arrow_upward,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _summaryTile(
+                          context,
+                          title: 'Balance',
+                          amount: '₹ ${summary.balance.toStringAsFixed(0)}',
+                          color: balanceColor,
+                          icon: Icons.account_balance_wallet,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _summaryTile(
+                          context,
+                          title: 'Savings',
+                          amount:
+                              '₹ ${summary.balance > 0 ? summary.balance.toStringAsFixed(0) : "0"} (${summary.savingsRate.toStringAsFixed(0)}%)',
+                          color: Colors.blue,
+                          icon: Icons.savings_outlined,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -191,15 +211,12 @@ class FinanceSummaryCard extends ConsumerWidget {
     required Color color,
     required IconData icon,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: isDark ? 0.15 : 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
+    return NeumorphicContainer(
+      style: NeumorphicStyle.inset,
+      borderRadius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -223,9 +240,9 @@ class FinanceSummaryCard extends ConsumerWidget {
             child: Text(
               amount,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ),

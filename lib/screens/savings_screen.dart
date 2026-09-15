@@ -5,6 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database.dart';
 import '../providers/budget_provider.dart';
 import '../providers/database_provider.dart';
+import '../widgets/neumorphic_button.dart';
+import '../widgets/neumorphic_card.dart';
+import '../widgets/neumorphic_icon_button.dart';
+import '../widgets/neumorphic_progress.dart';
 
 class SavingsScreen extends ConsumerWidget {
   const SavingsScreen({super.key});
@@ -34,10 +38,7 @@ class SavingsScreen extends ConsumerWidget {
               children: [
                 TextFormField(
                   controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Goal Name',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: const InputDecoration(labelText: 'Goal Name'),
                   validator: (v) =>
                       v == null || v.trim().isEmpty ? 'Enter goal name' : null,
                   autofocus: true,
@@ -51,7 +52,6 @@ class SavingsScreen extends ConsumerWidget {
                   decoration: const InputDecoration(
                     labelText: 'Target Amount (₹)',
                     prefixText: '₹ ',
-                    border: OutlineInputBorder(),
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) {
@@ -99,13 +99,15 @@ class SavingsScreen extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        existing == null ? 'Goal created' : 'Goal updated',
+                        existing == null
+                            ? 'Savings goal created'
+                            : 'Savings goal updated',
                       ),
                     ),
                   );
                 }
               },
-              child: Text(existing == null ? 'Create' : 'Save'),
+              child: const Text('Save Goal'),
             ),
           ],
         );
@@ -119,38 +121,56 @@ class SavingsScreen extends ConsumerWidget {
     SavingsGoal goal,
     bool isAdd,
   ) {
-    final amountController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    final amountController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: Text('${isAdd ? 'Add' : 'Remove'} Money: ${goal.name}'),
+          title: Text(isAdd ? 'Add Money to Goal' : 'Remove Money from Goal'),
           content: Form(
             key: formKey,
-            child: TextFormField(
-              controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: InputDecoration(
-                labelText: 'Amount (₹)',
-                prefixText: '₹ ',
-                border: const OutlineInputBorder(),
-              ),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Enter amount';
-                final parsed = double.tryParse(v.trim());
-                if (parsed == null || parsed <= 0) {
-                  return 'Enter valid amount > 0';
-                }
-                if (!isAdd && parsed > goal.currentAmount) {
-                  return 'Cannot remove more than saved amount (₹${goal.currentAmount.toStringAsFixed(0)})';
-                }
-                return null;
-              },
-              autofocus: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Goal: ${goal.name}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Currently saved: ₹${goal.currentAmount.toStringAsFixed(0)} / ₹${goal.targetAmount.toStringAsFixed(0)}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: amountController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: isAdd
+                        ? 'Amount to Add (₹)'
+                        : 'Amount to Remove (₹)',
+                    prefixText: '₹ ',
+                  ),
+                  autofocus: true,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Enter amount';
+                    }
+                    final parsed = double.tryParse(v.trim());
+                    if (parsed == null || parsed <= 0) {
+                      return 'Enter valid amount > 0';
+                    }
+                    if (!isAdd && parsed > goal.currentAmount) {
+                      return 'Cannot remove more than current savings';
+                    }
+                    return null;
+                  },
+                ),
+              ],
             ),
           ),
           actions: [
@@ -159,22 +179,28 @@ class SavingsScreen extends ConsumerWidget {
               child: const Text('Cancel'),
             ),
             FilledButton(
+              style: isAdd
+                  ? null
+                  : FilledButton.styleFrom(backgroundColor: Colors.orange),
               onPressed: () async {
                 if (!formKey.currentState!.validate()) return;
-                final delta = double.parse(amountController.text.trim());
-                final newAmount = isAdd
-                    ? goal.currentAmount + delta
-                    : goal.currentAmount - delta;
-
+                final amt = double.parse(amountController.text.trim());
                 final db = ref.read(databaseProvider);
-                await db.updateSavingsGoalAmount(goal.id, newAmount);
+
+                final newCurrent = isAdd
+                    ? goal.currentAmount + amt
+                    : goal.currentAmount - amt;
+                final updated = goal.copyWith(currentAmount: newCurrent);
+                await db.updateSavingsGoal(updated);
 
                 if (context.mounted) {
                   Navigator.of(ctx).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        '${isAdd ? 'Added' : 'Removed'} ₹${delta.toStringAsFixed(0)}',
+                        isAdd
+                            ? 'Added ₹${amt.toStringAsFixed(0)} to ${goal.name}'
+                            : 'Removed ₹${amt.toStringAsFixed(0)} from ${goal.name}',
                       ),
                     ),
                   );
@@ -195,26 +221,29 @@ class SavingsScreen extends ConsumerWidget {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Savings Goal'),
-        content: Text('Are you sure you want to delete "${goal.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Delete Savings Goal'),
+          content: Text(
+            'Delete goal "${goal.name}"? Current saved amount: ₹${goal.currentAmount.toStringAsFixed(0)}',
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed == true) {
-      final db = ref.read(databaseProvider);
-      await db.deleteSavingsGoal(goal.id);
+      await ref.read(databaseProvider).deleteSavingsGoal(goal.id);
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
@@ -226,17 +255,27 @@ class SavingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final goalsAsync = ref.watch(savingsGoalsStreamProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Savings Goals'),
         actions: [
-          IconButton(
-            tooltip: 'Add Goal',
+          NeumorphicIconButton(
+            tooltip: 'Create Goal',
             onPressed: () => _showGoalDialog(context, ref),
-            icon: const Icon(Icons.savings),
+            icon: Icons.add_circle_outline,
           ),
+          const SizedBox(width: 8),
         ],
+      ),
+      floatingActionButton: NeumorphicButton(
+        icon: Icons.add,
+        label: 'Add Goal',
+        isPrimary: true,
+        borderRadius: 24,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        onPressed: () => _showGoalDialog(context, ref),
       ),
       body: goalsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -247,21 +286,25 @@ class SavingsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.savings_outlined,
                     size: 64,
-                    color: Colors.grey,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'No savings goals created yet',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  FilledButton.icon(
+                  NeumorphicButton(
+                    icon: Icons.add,
+                    label: 'Create First Goal',
+                    isPrimary: true,
                     onPressed: () => _showGoalDialog(context, ref),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Create First Goal'),
                   ),
                 ],
               ),
@@ -281,14 +324,11 @@ class SavingsScreen extends ConsumerWidget {
                     );
               final progress = pct / 100.0;
 
-              return Card(
+              return Container(
                 margin: const EdgeInsets.only(bottom: 12),
-                elevation: 1,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
+                child: NeumorphicCard(
                   padding: const EdgeInsets.all(16),
+                  borderRadius: 16,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -298,12 +338,17 @@ class SavingsScreen extends ConsumerWidget {
                           Text(
                             goal.name,
                             style: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert),
+                            icon: Icon(
+                              Icons.more_vert,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
+                            ),
                             onSelected: (val) {
                               if (val == 'edit') {
                                 _showGoalDialog(context, ref, goal);
@@ -393,7 +438,9 @@ class SavingsScreen extends ConsumerWidget {
                                 'Saved',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey[600],
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                               ),
                               Text(
@@ -413,7 +460,9 @@ class SavingsScreen extends ConsumerWidget {
                                 'Target',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey[600],
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                               ),
                               Text(
@@ -431,43 +480,47 @@ class SavingsScreen extends ConsumerWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.blue.withValues(alpha: 0.1),
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.15,
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              '${pct.toStringAsFixed(2)}%',
-                              style: const TextStyle(
+                              '${pct.toStringAsFixed(1)}%',
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue,
+                                color: theme.colorScheme.primary,
                               ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 10,
-                          backgroundColor: Colors.grey.withValues(alpha: 0.15),
-                          color: pct >= 100 ? Colors.green : Colors.blue,
-                        ),
+                      NeumorphicProgress(
+                        progress: progress,
+                        height: 10,
+                        color: pct >= 100
+                            ? Colors.green
+                            : theme.colorScheme.primary,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          OutlinedButton.icon(
+                          NeumorphicButton(
+                            icon: Icons.add,
+                            label: 'Add Money',
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
                             onPressed: () => _showAddRemoveMoneyDialog(
                               context,
                               ref,
                               goal,
                               true,
                             ),
-                            icon: const Icon(Icons.add, size: 16),
-                            label: const Text('Add Money'),
                           ),
                         ],
                       ),
@@ -478,11 +531,6 @@ class SavingsScreen extends ConsumerWidget {
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showGoalDialog(context, ref),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Goal'),
       ),
     );
   }

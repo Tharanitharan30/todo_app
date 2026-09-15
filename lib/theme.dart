@@ -10,6 +10,22 @@ class AppSpacing {
   static const double xxxl = 32.0;
 }
 
+class NeumorphicColors {
+  static const Color lightBackground = Color(0xFFE8ECF1);
+  static const Color lightSurface = Color(0xFFE8ECF1);
+  static const Color lightTextPrimary = Color(0xFF2D3748);
+  static const Color lightTextSecondary = Color(0xFF718096);
+  static const Color lightDarkShadow = Color(0xFFA3B1C6);
+  static const Color lightLightHighlight = Color(0xFFFFFFFF);
+
+  static const Color darkBackground = Color(0xFF1E2228);
+  static const Color darkSurface = Color(0xFF1E2228);
+  static const Color darkTextPrimary = Color(0xFFE2E8F0);
+  static const Color darkTextSecondary = Color(0xFFA0AEC0);
+  static const Color darkDarkShadow = Color(0xFF121519);
+  static const Color darkLightHighlight = Color(0xFF2A2F38);
+}
+
 class AppTheme {
   // Semantic Colors
   static const Color success = Color(0xFF2E7D32);
@@ -35,133 +51,187 @@ class AppTheme {
         return Colors.red;
       case 'default':
       default:
-        return isDark ? Colors.white : Colors.black;
+        return isDark ? const Color(0xFFE2E8F0) : const Color(0xFF2D3748);
     }
+  }
+
+  static List<BoxShadow> getRaisedShadows(
+    BuildContext context, {
+    double distance = 4,
+    double blur = 8,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (isDark) {
+      return [
+        BoxShadow(
+          color: NeumorphicColors.darkDarkShadow.withValues(alpha: 0.8),
+          offset: Offset(distance, distance),
+          blurRadius: blur,
+        ),
+        BoxShadow(
+          color: NeumorphicColors.darkLightHighlight.withValues(alpha: 0.5),
+          offset: Offset(-distance, -distance),
+          blurRadius: blur,
+        ),
+      ];
+    } else {
+      return [
+        BoxShadow(
+          color: NeumorphicColors.lightDarkShadow.withValues(alpha: 0.5),
+          offset: Offset(distance, distance),
+          blurRadius: blur,
+        ),
+        BoxShadow(
+          color: NeumorphicColors.lightLightHighlight.withValues(alpha: 0.9),
+          offset: Offset(-distance, -distance),
+          blurRadius: blur,
+        ),
+      ];
+    }
+  }
+
+  static Color getSurfaceColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark
+        ? NeumorphicColors.darkSurface
+        : NeumorphicColors.lightSurface;
+  }
+
+  static Color getBackgroundColor(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark
+        ? NeumorphicColors.darkBackground
+        : NeumorphicColors.lightBackground;
   }
 
   static ThemeData getLight(String accentName) {
     final seedColor = getAccentColor(accentName, isDark: false);
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: seedColor == Colors.black ? Colors.black : seedColor,
+      seedColor: seedColor,
       brightness: Brightness.light,
-      surface: const Color(0xFFF8F9FA),
-      surfaceContainerHighest: const Color(0xFFEEEEEE),
-      surfaceContainer: const Color(0xFFF1F3F5),
+      surface: NeumorphicColors.lightSurface,
+      surfaceContainerHighest: const Color(0xFFDEE4EB),
+      surfaceContainer: NeumorphicColors.lightSurface,
     );
 
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+      scaffoldBackgroundColor: NeumorphicColors.lightBackground,
       appBarTheme: const AppBarTheme(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black,
+        foregroundColor: NeumorphicColors.lightTextPrimary,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          color: Colors.black,
+          color: NeumorphicColors.lightTextPrimary,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: Colors.white,
+        color: NeumorphicColors.lightSurface,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: Color(0xFFE9ECEF), width: 1),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFD6DEE7), width: 0.5),
         ),
       ),
       dialogTheme: DialogThemeData(
-        elevation: 2,
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 0,
+        backgroundColor: NeumorphicColors.lightSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFD6DEE7), width: 0.5),
+        ),
         titleTextStyle: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.black,
+          color: NeumorphicColors.lightTextPrimary,
         ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
-        elevation: 2,
-        backgroundColor: Colors.white,
+        elevation: 0,
+        backgroundColor: NeumorphicColors.lightSurface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFFF1F3F5),
+        fillColor: NeumorphicColors.lightSurface,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 12,
+          horizontal: 16,
+          vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE9ECEF), width: 1),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFD1D9E6), width: 0.8),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: error, width: 1),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(14),
           ),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(14),
           ),
-          side: const BorderSide(color: Color(0xFFCED4DA)),
+          side: const BorderSide(color: Color(0xFFC4D0DF)),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       chipTheme: ChipThemeData(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: Color(0xFFE9ECEF)),
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: Color(0xFFD6DEE7)),
         ),
-        backgroundColor: const Color(0xFFF1F3F5),
+        backgroundColor: NeumorphicColors.lightSurface,
         selectedColor: colorScheme.primary.withValues(alpha: 0.15),
       ),
       navigationBarTheme: NavigationBarThemeData(
         elevation: 0,
-        backgroundColor: Colors.white,
-        height: 64,
-        indicatorColor: colorScheme.primary.withValues(alpha: 0.12),
+        backgroundColor: NeumorphicColors.lightSurface,
+        height: 68,
+        indicatorColor: colorScheme.primary.withValues(alpha: 0.15),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       ),
       navigationRailTheme: NavigationRailThemeData(
         elevation: 0,
-        backgroundColor: Colors.white,
-        indicatorColor: colorScheme.primary.withValues(alpha: 0.12),
+        backgroundColor: NeumorphicColors.lightSurface,
+        indicatorColor: colorScheme.primary.withValues(alpha: 0.15),
         labelType: NavigationRailLabelType.all,
       ),
     );
@@ -170,125 +240,130 @@ class AppTheme {
   static ThemeData getDark(String accentName) {
     final seedColor = getAccentColor(accentName, isDark: true);
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: seedColor == Colors.white ? Colors.white : seedColor,
+      seedColor: seedColor,
       brightness: Brightness.dark,
-      surface: const Color(0xFF121212),
-      surfaceContainerHighest: const Color(0xFF2C2C2C),
-      surfaceContainer: const Color(0xFF1E1E1E),
+      surface: NeumorphicColors.darkSurface,
+      surfaceContainerHighest: const Color(0xFF272C34),
+      surfaceContainer: NeumorphicColors.darkSurface,
     );
 
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFF121212),
+      scaffoldBackgroundColor: NeumorphicColors.darkBackground,
       appBarTheme: const AppBarTheme(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
+        foregroundColor: NeumorphicColors.darkTextPrimary,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          color: Colors.white,
+          color: NeumorphicColors.darkTextPrimary,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: const Color(0xFF1E1E1E),
+        color: NeumorphicColors.darkSurface,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: Color(0xFF2C2C2C), width: 1),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFF282D36), width: 0.5),
         ),
       ),
       dialogTheme: DialogThemeData(
-        elevation: 4,
-        backgroundColor: const Color(0xFF1E1E1E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 0,
+        backgroundColor: NeumorphicColors.darkSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFF282D36), width: 0.5),
+        ),
         titleTextStyle: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: NeumorphicColors.darkTextPrimary,
         ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
-        elevation: 4,
-        backgroundColor: Color(0xFF1E1E1E),
+        elevation: 0,
+        backgroundColor: NeumorphicColors.darkSurface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF2C2C2C),
+        fillColor: NeumorphicColors.darkSurface,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 12,
+          horizontal: 16,
+          vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF383838), width: 1),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFF2A2F38), width: 0.8),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: errorLight, width: 1),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(14),
           ),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(14),
           ),
-          side: const BorderSide(color: Color(0xFF444444)),
+          side: const BorderSide(color: Color(0xFF323843)),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       chipTheme: ChipThemeData(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: Color(0xFF383838)),
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: Color(0xFF282D36)),
         ),
-        backgroundColor: const Color(0xFF2C2C2C),
+        backgroundColor: NeumorphicColors.darkSurface,
         selectedColor: colorScheme.primary.withValues(alpha: 0.25),
       ),
       navigationBarTheme: NavigationBarThemeData(
         elevation: 0,
-        backgroundColor: const Color(0xFF1E1E1E),
-        height: 64,
+        backgroundColor: NeumorphicColors.darkSurface,
+        height: 68,
         indicatorColor: colorScheme.primary.withValues(alpha: 0.2),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       ),
       navigationRailTheme: NavigationRailThemeData(
         elevation: 0,
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: NeumorphicColors.darkSurface,
         indicatorColor: colorScheme.primary.withValues(alpha: 0.2),
         labelType: NavigationRailLabelType.all,
       ),

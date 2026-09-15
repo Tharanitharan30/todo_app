@@ -6,6 +6,11 @@ import '../database/database.dart';
 import '../providers/focus_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/focus_task_selector.dart';
+import '../widgets/neumorphic_button.dart';
+import '../widgets/neumorphic_card.dart';
+import '../widgets/neumorphic_container.dart';
+import '../widgets/neumorphic_icon_button.dart';
+import '../widgets/neumorphic_progress.dart';
 
 class FocusScreen extends ConsumerWidget {
   const FocusScreen({super.key});
@@ -43,17 +48,18 @@ class FocusScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Focus'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.history_rounded),
+          NeumorphicIconButton(
+            icon: Icons.history_rounded,
             tooltip: 'Focus History',
             onPressed: () => context.go('/focus-history'),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
+          const SizedBox(width: 8),
+          NeumorphicIconButton(
+            icon: Icons.settings_outlined,
             tooltip: 'Settings',
             onPressed: () => context.go('/settings'),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
       body: LayoutBuilder(
@@ -69,22 +75,20 @@ class FocusScreen extends ConsumerWidget {
                   // Left Column: Timer & Controls
                   Expanded(
                     flex: 3,
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
-                          children: [
-                            _buildSessionHeader(context, focusState, settings),
-                            const SizedBox(height: 32),
-                            _buildTimerDisplay(context, focusState),
-                            const SizedBox(height: 32),
-                            _buildTimerControls(
-                              context,
-                              focusState,
-                              focusNotifier,
-                            ),
-                          ],
-                        ),
+                    child: NeumorphicCard(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        children: [
+                          _buildSessionHeader(context, focusState, settings),
+                          const SizedBox(height: 32),
+                          _buildTimerDisplay(context, focusState),
+                          const SizedBox(height: 32),
+                          _buildTimerControls(
+                            context,
+                            focusState,
+                            focusNotifier,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -132,18 +136,16 @@ class FocusScreen extends ConsumerWidget {
                       _openTaskSelector(context, ref, focusState.selectedTask),
                 ),
                 const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        _buildSessionHeader(context, focusState, settings),
-                        const SizedBox(height: 24),
-                        _buildTimerDisplay(context, focusState),
-                        const SizedBox(height: 24),
-                        _buildTimerControls(context, focusState, focusNotifier),
-                      ],
-                    ),
+                NeumorphicCard(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      _buildSessionHeader(context, focusState, settings),
+                      const SizedBox(height: 24),
+                      _buildTimerDisplay(context, focusState),
+                      const SizedBox(height: 24),
+                      _buildTimerControls(context, focusState, focusNotifier),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -188,16 +190,14 @@ class FocusScreen extends ConsumerWidget {
 
     final cycleNum =
         (focusState.completedPomodoros % settings.sessionsBeforeLongBreak) + 1;
+    final theme = Theme.of(context);
 
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: color.withValues(alpha: 0.3)),
-          ),
+        NeumorphicContainer(
+          style: NeumorphicStyle.inset,
+          borderRadius: 20,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -205,15 +205,15 @@ class FocusScreen extends ConsumerWidget {
                 focusState.sessionType == FocusSessionType.focus
                     ? Icons.timer_outlined
                     : Icons.coffee_outlined,
-                size: 16,
+                size: 18,
                 color: color,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Text(
                 title,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                  fontSize: 14,
                   color: color,
                 ),
               ),
@@ -224,12 +224,18 @@ class FocusScreen extends ConsumerWidget {
         if (focusState.sessionType == FocusSessionType.focus)
           Text(
             'Session $cycleNum of ${settings.sessionsBeforeLongBreak}',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           )
         else
           Text(
             'Take a moment to relax and recharge',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
       ],
     );
@@ -257,19 +263,23 @@ class FocusScreen extends ConsumerWidget {
         break;
     }
 
-    return SizedBox(
+    return NeumorphicContainer(
+      style: NeumorphicStyle.inset,
+      borderRadius: 110,
       width: 220,
       height: 220,
       child: Stack(
         alignment: Alignment.center,
         children: [
           SizedBox(
-            width: 210,
-            height: 210,
+            width: 200,
+            height: 200,
             child: CircularProgressIndicator(
               value: progress,
               strokeWidth: 8,
-              backgroundColor: theme.colorScheme.surfaceContainerHighest,
+              backgroundColor: theme.colorScheme.onSurface.withValues(
+                alpha: 0.05,
+              ),
               color: progressColor,
             ),
           ),
@@ -292,7 +302,7 @@ class FocusScreen extends ConsumerWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.15),
+                    color: Colors.orange.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text(
@@ -322,43 +332,46 @@ class FocusScreen extends ConsumerWidget {
       alignment: WrapAlignment.center,
       children: [
         if (!focusState.isRunning)
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            ),
+          NeumorphicButton(
+            icon: Icons.play_arrow_rounded,
+            label: 'Start',
+            isPrimary: true,
+            borderRadius: 14,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             onPressed: () => focusNotifier.startFocusSession(),
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Start'),
           )
         else if (focusState.isPaused)
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            ),
+          NeumorphicButton(
+            icon: Icons.play_arrow_rounded,
+            label: 'Resume',
+            isPrimary: true,
+            borderRadius: 14,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             onPressed: () => focusNotifier.resumeTimer(),
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Resume'),
           )
         else
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            ),
+          NeumorphicButton(
+            icon: Icons.pause_rounded,
+            label: 'Pause',
+            color: Colors.orange,
+            textColor: Colors.white,
+            borderRadius: 14,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             onPressed: () => focusNotifier.pauseTimer(),
-            icon: const Icon(Icons.pause_rounded),
-            label: const Text('Pause'),
           ),
-        OutlinedButton.icon(
+        NeumorphicButton(
+          icon: Icons.refresh_rounded,
+          label: 'Reset',
+          borderRadius: 14,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           onPressed: () => focusNotifier.resetTimer(),
-          icon: const Icon(Icons.refresh_rounded, size: 18),
-          label: const Text('Reset'),
         ),
-        TextButton.icon(
+        NeumorphicButton(
+          icon: Icons.skip_next_rounded,
+          label: 'Skip',
+          borderRadius: 14,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           onPressed: () => focusNotifier.skipSession(),
-          icon: const Icon(Icons.skip_next_rounded, size: 18),
-          label: const Text('Skip'),
         ),
       ],
     );
@@ -372,67 +385,72 @@ class FocusScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final task = focusState.selectedTask;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Current Task',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+    return NeumorphicCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Current Task',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              NeumorphicButton(
+                label: task == null ? 'Select Task' : 'Change',
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
                 ),
-                TextButton(
-                  onPressed: focusState.isRunning ? null : onSelectTask,
-                  child: Text(task == null ? 'Select Task' : 'Change'),
+                onPressed: focusState.isRunning ? null : onSelectTask,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (task == null)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                backgroundColor: theme.colorScheme.primary.withValues(
+                  alpha: 0.12,
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (task == null)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(
-                  backgroundColor: theme.colorScheme.primary.withValues(
-                    alpha: 0.12,
-                  ),
-                  child: Icon(
-                    Icons.center_focus_strong,
-                    color: theme.colorScheme.primary,
-                    size: 20,
-                  ),
+                child: Icon(Icons.task_alt, color: theme.colorScheme.primary),
+              ),
+              title: const Text(
+                'No task selected',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+              subtitle: const Text(
+                'Select a task to link your focus session to a specific project',
+                style: TextStyle(fontSize: 12),
+              ),
+            )
+          else
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                backgroundColor: theme.colorScheme.primary.withValues(
+                  alpha: 0.12,
                 ),
-                title: const Text(
-                  'General Focus',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: const Text('No specific task selected'),
-              )
-            else
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blue.withValues(alpha: 0.12),
-                  child: const Icon(
-                    Icons.task_alt,
-                    color: Colors.blue,
-                    size: 20,
-                  ),
-                ),
-                title: Text(
-                  task.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  '${task.category[0].toUpperCase()}${task.category.substring(1)} • Priority: ${task.priority}',
-                  style: const TextStyle(fontSize: 12),
+                child: Icon(
+                  Icons.check_circle_outline,
+                  color: theme.colorScheme.primary,
                 ),
               ),
-          ],
-        ),
+              title: Text(
+                task.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              subtitle: Text(
+                '${task.category.isNotEmpty ? task.category : "General"} • ${task.priority.toUpperCase()} priority',
+                style: const TextStyle(fontSize: 12),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -447,118 +465,92 @@ class FocusScreen extends ConsumerWidget {
   }) {
     final theme = Theme.of(context);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Today\'s Focus Summary',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                TextButton.icon(
-                  onPressed: () => context.go('/focus-history'),
-                  icon: const Icon(Icons.arrow_forward, size: 16),
-                  label: const Text('History'),
-                ),
-              ],
-            ),
-            const Divider(),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryStat(
-                    'Sessions Today',
-                    '$todaySessionsCount',
-                    Icons.check_circle_outline,
-                    Colors.green,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildSummaryStat(
-                    'Focus Time',
-                    _formatHoursMinutes(todayFocusSecs),
-                    Icons.timer_outlined,
-                    Colors.blue,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Daily Goal',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                Text(
-                  '${_formatHoursMinutes(todayFocusSecs)} / ${dailyGoalHours.toStringAsFixed(1)}h (${(goalProgress * 100).round()}%)',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: goalProgress,
-                minHeight: 8,
-                backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                color: Colors.blue,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSummaryStat(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
+    return NeumorphicCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            backgroundColor: color.withValues(alpha: 0.15),
-            radius: 16,
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+              Icon(
+                Icons.analytics_outlined,
+                size: 18,
+                color: theme.colorScheme.primary,
               ),
-              Text(
-                label,
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+              const SizedBox(width: 8),
+              const Text(
+                'Today\'s Progress',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    'Sessions',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$todaySessionsCount',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text(
+                    'Focus Time',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatHoursMinutes(todayFocusSecs),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Daily Goal: ${dailyGoalHours.toInt()}h',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              Text(
+                '${(goalProgress * 100).toInt()}%',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          NeumorphicProgress(progress: goalProgress, height: 10),
         ],
       ),
     );
@@ -573,10 +565,11 @@ class FocusScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (ctx) => FocusTaskSelector(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      builder: (_) => FocusTaskSelector(
         selectedTask: selectedTask,
-        onTaskSelected: (task) {
-          ref.read(focusProvider.notifier).selectTask(task);
+        onTaskSelected: (t) {
+          ref.read(focusProvider.notifier).selectTask(t);
         },
       ),
     );

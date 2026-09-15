@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../services/notification_service.dart';
 import 'database_provider.dart';
 
 class AppSettings {
@@ -16,7 +17,9 @@ class AppSettings {
 
   // Notification settings
   final bool dailyBriefingEnabled;
-  final TimeOfDay dailyBriefingTime;
+  final int dailyBriefingHour;
+  final int dailyBriefingMinute;
+  final bool dailyBriefingOpenApp;
   final bool dailySummaryEnabled;
   final TimeOfDay dailySummaryTime;
   final bool taskRemindersEnabled;
@@ -37,6 +40,9 @@ class AppSettings {
   final bool timerSoundEnabled;
   final bool timerVibrationEnabled;
 
+  TimeOfDay get dailyBriefingTime =>
+      TimeOfDay(hour: dailyBriefingHour, minute: dailyBriefingMinute);
+
   const AppSettings({
     this.themeMode = ThemeMode.system,
     this.accentColor = 'default',
@@ -48,7 +54,9 @@ class AppSettings {
     this.autoBackupEnabled = false,
     this.lastBackupTime,
     this.dailyBriefingEnabled = true,
-    this.dailyBriefingTime = const TimeOfDay(hour: 7, minute: 30),
+    this.dailyBriefingHour = 8,
+    this.dailyBriefingMinute = 0,
+    this.dailyBriefingOpenApp = true,
     this.dailySummaryEnabled = true,
     this.dailySummaryTime = const TimeOfDay(hour: 20, minute: 0),
     this.taskRemindersEnabled = true,
@@ -79,6 +87,9 @@ class AppSettings {
     bool? autoBackupEnabled,
     DateTime? lastBackupTime,
     bool? dailyBriefingEnabled,
+    int? dailyBriefingHour,
+    int? dailyBriefingMinute,
+    bool? dailyBriefingOpenApp,
     TimeOfDay? dailyBriefingTime,
     bool? dailySummaryEnabled,
     TimeOfDay? dailySummaryTime,
@@ -109,7 +120,17 @@ class AppSettings {
       autoBackupEnabled: autoBackupEnabled ?? this.autoBackupEnabled,
       lastBackupTime: lastBackupTime ?? this.lastBackupTime,
       dailyBriefingEnabled: dailyBriefingEnabled ?? this.dailyBriefingEnabled,
-      dailyBriefingTime: dailyBriefingTime ?? this.dailyBriefingTime,
+      dailyBriefingHour:
+          dailyBriefingHour ??
+          (dailyBriefingTime != null
+              ? dailyBriefingTime.hour
+              : this.dailyBriefingHour),
+      dailyBriefingMinute:
+          dailyBriefingMinute ??
+          (dailyBriefingTime != null
+              ? dailyBriefingTime.minute
+              : this.dailyBriefingMinute),
+      dailyBriefingOpenApp: dailyBriefingOpenApp ?? this.dailyBriefingOpenApp,
       dailySummaryEnabled: dailySummaryEnabled ?? this.dailySummaryEnabled,
       dailySummaryTime: dailySummaryTime ?? this.dailySummaryTime,
       taskRemindersEnabled: taskRemindersEnabled ?? this.taskRemindersEnabled,
@@ -138,6 +159,8 @@ class AppSettings {
 }
 
 class AppSettingsNotifier extends Notifier<AppSettings> {
+  bool _isLoaded = false;
+
   @override
   AppSettings build() {
     _loadSettingsFromDb();
@@ -145,6 +168,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   }
 
   Future<void> reloadSettings() async {
+    _isLoaded = false;
     await _loadSettingsFromDb();
   }
 
@@ -152,6 +176,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     try {
       final db = ref.read(databaseProvider);
       final allSettings = await db.getAllSettings();
+      if (!ref.mounted) return;
+      if (_isLoaded) return;
+
       final Map<String, String> map = {
         for (final s in allSettings) s.key: s.value,
       };
@@ -199,6 +226,13 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
         return DateTime.tryParse(val);
       }
 
+      final parsedTime = parseTime(
+        'daily_briefing_time',
+        const TimeOfDay(hour: 8, minute: 0),
+      );
+      final briefingHour = parseInt('daily_briefing_hour', parsedTime.hour);
+      final briefingMin = parseInt('daily_briefing_minute', parsedTime.minute);
+
       state = AppSettings(
         themeMode: parseTheme(map['theme_mode']),
         accentColor: map['accent_color'] ?? 'default',
@@ -210,10 +244,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
         autoBackupEnabled: parseBool('auto_backup_enabled', false),
         lastBackupTime: parseDate(map['last_backup_time']),
         dailyBriefingEnabled: parseBool('daily_briefing_enabled', true),
-        dailyBriefingTime: parseTime(
-          'daily_briefing_time',
-          const TimeOfDay(hour: 7, minute: 30),
-        ),
+        dailyBriefingHour: briefingHour,
+        dailyBriefingMinute: briefingMin,
+        dailyBriefingOpenApp: parseBool('daily_briefing_open_app', true),
         dailySummaryEnabled: parseBool('daily_summary_enabled', true),
         dailySummaryTime: parseTime(
           'daily_summary_time',
@@ -244,14 +277,17 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
         timerSoundEnabled: parseBool('timer_sound_enabled', true),
         timerVibrationEnabled: parseBool('timer_vibration_enabled', true),
       );
+      _isLoaded = true;
     } catch (e) {
       debugPrint('Error loading app settings: $e');
     }
   }
 
   Future<void> updateSettings(AppSettings newSettings) async {
+    _isLoaded = true;
     state = newSettings;
     try {
+      if (!ref.mounted) return;
       final db = ref.read(databaseProvider);
 
       String themeStr;
@@ -298,8 +334,20 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
         newSettings.dailyBriefingEnabled.toString(),
       );
       await db.setSetting(
+        'daily_briefing_hour',
+        newSettings.dailyBriefingHour.toString(),
+      );
+      await db.setSetting(
+        'daily_briefing_minute',
+        newSettings.dailyBriefingMinute.toString(),
+      );
+      await db.setSetting(
+        'daily_briefing_open_app',
+        newSettings.dailyBriefingOpenApp.toString(),
+      );
+      await db.setSetting(
         'daily_briefing_time',
-        '${newSettings.dailyBriefingTime.hour}:${newSettings.dailyBriefingTime.minute}',
+        '${newSettings.dailyBriefingHour}:${newSettings.dailyBriefingMinute}',
       );
       await db.setSetting(
         'daily_summary_enabled',
@@ -372,6 +420,49 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     } catch (e) {
       debugPrint('Error saving app settings: $e');
     }
+  }
+
+  Future<void> setDailyBriefingTime(TimeOfDay time) async {
+    final updated = state.copyWith(
+      dailyBriefingHour: time.hour,
+      dailyBriefingMinute: time.minute,
+    );
+    await updateSettings(updated);
+    if (updated.dailyBriefingEnabled) {
+      try {
+        final tasks = await ref.read(databaseProvider).getAllTasks();
+        final highPriority = tasks
+            .where(
+              (t) =>
+                  (t.priority == 'urgent' || t.priority == 'high') &&
+                  t.status != 'completed',
+            )
+            .length;
+        final body =
+            'You have ${tasks.length} tasks ($highPriority high priority). Tap to view briefing.';
+        await NotificationService().scheduleDailyBriefing(
+          time: time,
+          body: body,
+        );
+      } catch (_) {}
+    }
+  }
+
+  Future<void> setDailyBriefingEnabled(bool enabled) async {
+    final updated = state.copyWith(dailyBriefingEnabled: enabled);
+    await updateSettings(updated);
+    if (enabled) {
+      await setDailyBriefingTime(updated.dailyBriefingTime);
+    } else {
+      try {
+        await NotificationService().cancelDailyBriefing();
+      } catch (_) {}
+    }
+  }
+
+  Future<void> setDailyBriefingOpenApp(bool openApp) async {
+    final updated = state.copyWith(dailyBriefingOpenApp: openApp);
+    await updateSettings(updated);
   }
 }
 

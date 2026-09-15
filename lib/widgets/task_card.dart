@@ -7,6 +7,8 @@ import '../providers/task_provider.dart';
 import '../screens/task_detail_screen.dart';
 import 'add_task_dialog.dart';
 import 'common_widgets.dart';
+import 'neumorphic_card.dart';
+import 'neumorphic_container.dart';
 
 class TaskCard extends ConsumerWidget {
   final Task task;
@@ -74,20 +76,15 @@ class TaskCard extends ConsumerWidget {
     final overdue = _isOverdue(task);
     final database = ref.read(databaseProvider);
     final subtasksAsync = ref.watch(subtasksForTaskProvider(task.id));
+    final theme = Theme.of(context);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      elevation: completed ? 0 : 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: overdue
-              ? Colors.red.withAlpha(120)
-              : Theme.of(context).colorScheme.outlineVariant.withAlpha(80),
-        ),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: NeumorphicCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        borderRadius: 14,
+        style: completed ? NeumorphicStyle.flat : NeumorphicStyle.raised,
+        borderColor: overdue ? Colors.red.withValues(alpha: 0.5) : null,
         onTap: () {
           Navigator.push(
             context,
@@ -96,283 +93,272 @@ class TaskCard extends ConsumerWidget {
             ),
           );
         },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Checkbox
-                  Checkbox(
-                    value: completed,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    onChanged: (_) => onComplete(),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Tactile Circular Neumorphic Checkbox
+            GestureDetector(
+              onTap: onComplete,
+              child: NeumorphicContainer(
+                style: completed
+                    ? NeumorphicStyle.inset
+                    : NeumorphicStyle.raised,
+                width: 26,
+                height: 26,
+                borderRadius: 13,
+                color: completed ? theme.colorScheme.primary : null,
+                child: Center(
+                  child: Icon(
+                    completed ? Icons.check : null,
+                    size: 16,
+                    color: theme.colorScheme.onPrimary,
                   ),
-                  const SizedBox(width: 4),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
 
-                  // Title & Subtitle info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          task.title,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            decoration: completed
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                            color: completed
-                                ? Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface.withAlpha(120)
-                                : Theme.of(context).colorScheme.onSurface,
-                          ),
+            // Title & Subtitle info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      decoration: completed
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                      color: completed
+                          ? theme.colorScheme.onSurface.withValues(alpha: 0.5)
+                          : theme.colorScheme.onSurface,
+                    ),
+                  ),
+
+                  if (task.description.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      task.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
                         ),
+                      ),
+                    ),
+                  ],
 
-                        if (task.description.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            task.description,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
+                  const SizedBox(height: 6),
 
-                        const SizedBox(height: 6),
+                  // Subtitle info row: Category, Due date, Subtasks progress
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      if (task.category.isNotEmpty)
+                        CategoryBadge(category: task.category),
 
-                        // Subtitle info row: Category, Due date, Subtasks progress
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 4,
+                      if (task.dueDate != null)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (task.category.isNotEmpty)
-                              CategoryBadge(category: task.category),
-
-                            if (task.dueDate != null)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.event_outlined,
-                                    size: 13,
-                                    color: overdue
-                                        ? Colors.red
-                                        : Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant,
-                                  ),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    _formatDueDate(task.dueDate!, task.dueTime),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: overdue
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                      color: overdue
-                                          ? Colors.red
-                                          : Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
+                            Icon(
+                              Icons.event_outlined,
+                              size: 13,
+                              color: overdue
+                                  ? Colors.red
+                                  : theme.colorScheme.onSurface.withValues(
+                                      alpha: 0.6,
                                     ),
-                                  ),
-                                ],
-                              ),
-
-                            // Subtask progress
-                            subtasksAsync.when(
-                              data: (subtasks) {
-                                if (subtasks.isEmpty) {
-                                  return const SizedBox.shrink();
-                                }
-                                final done = subtasks
-                                    .where((s) => s.completed)
-                                    .length;
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.check_box_outlined,
-                                      size: 13,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                                    ),
-                                    const SizedBox(width: 3),
-                                    Text(
-                                      '$done/${subtasks.length}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              _formatDueDate(task.dueDate!, task.dueTime),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: overdue
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: overdue
+                                    ? Colors.red
+                                    : theme.colorScheme.onSurface.withValues(
+                                        alpha: 0.6,
                                       ),
-                                    ),
-                                  ],
-                                );
-                              },
-                              loading: () => const SizedBox.shrink(),
-                              error: (_, _) => const SizedBox.shrink(),
+                              ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
 
-                  // Important Star toggle button
-                  IconButton(
-                    icon: Icon(
-                      task.isImportant ? Icons.star : Icons.star_border,
-                      color: task.isImportant
-                          ? Colors.amber
-                          : Theme.of(context).colorScheme.outline,
-                    ),
-                    onPressed: () {
-                      database.toggleTaskImportant(task.id, !task.isImportant);
-                    },
-                  ),
-
-                  // Priority indicator & Popup Menu
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      PriorityChip(priority: task.priority),
-                      PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert),
-                        onSelected: (value) async {
-                          switch (value) {
-                            case 'edit':
-                              showDialog(
-                                context: context,
-                                builder: (_) => AddTaskDialog(taskToEdit: task),
-                              );
-                              break;
-                            case 'toggle':
-                              onComplete();
-                              break;
-                            case 'important':
-                              database.toggleTaskImportant(
-                                task.id,
-                                !task.isImportant,
-                              );
-                              break;
-                            case 'duplicate':
-                              final newId = await database.duplicateTask(
-                                task.id,
-                              );
-                              if (context.mounted && newId > 0) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Task duplicated successfully',
-                                    ),
-                                  ),
-                                );
-                              }
-                              break;
-                            case 'delete':
-                              onDelete();
-                              break;
+                      // Subtask progress
+                      subtasksAsync.when(
+                        data: (subtasks) {
+                          if (subtasks.isEmpty) {
+                            return const SizedBox.shrink();
                           }
+                          final done = subtasks
+                              .where((s) => s.completed)
+                              .length;
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_box_outlined,
+                                size: 13,
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                '$done/${subtasks.length}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
                         },
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'edit',
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit_outlined, size: 18),
-                                SizedBox(width: 8),
-                                Text('Edit'),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 'toggle',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  completed
-                                      ? Icons.undo
-                                      : Icons.check_circle_outline,
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  completed
-                                      ? 'Mark incomplete'
-                                      : 'Mark complete',
-                                ),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 'important',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  task.isImportant
-                                      ? Icons.star_border
-                                      : Icons.star,
-                                  size: 18,
-                                  color: Colors.amber,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  task.isImportant
-                                      ? 'Remove star'
-                                      : 'Mark important',
-                                ),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'duplicate',
-                            child: Row(
-                              children: [
-                                Icon(Icons.copy_outlined, size: 18),
-                                SizedBox(width: 8),
-                                Text('Duplicate'),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.delete_outline,
-                                  size: 18,
-                                  color: Colors.red,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Delete',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, _) => const SizedBox.shrink(),
                       ),
                     ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+
+            // Important Star toggle button
+            IconButton(
+              icon: Icon(
+                task.isImportant ? Icons.star : Icons.star_border,
+                color: task.isImportant
+                    ? Colors.amber
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+              onPressed: () {
+                database.toggleTaskImportant(task.id, !task.isImportant);
+              },
+            ),
+
+            // Priority indicator & Popup Menu
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PriorityChip(priority: task.priority),
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                  onSelected: (value) async {
+                    switch (value) {
+                      case 'edit':
+                        showDialog(
+                          context: context,
+                          builder: (_) => AddTaskDialog(taskToEdit: task),
+                        );
+                        break;
+                      case 'toggle':
+                        onComplete();
+                        break;
+                      case 'important':
+                        database.toggleTaskImportant(
+                          task.id,
+                          !task.isImportant,
+                        );
+                        break;
+                      case 'duplicate':
+                        final newId = await database.duplicateTask(task.id);
+                        if (context.mounted && newId > 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Task duplicated successfully'),
+                            ),
+                          );
+                        }
+                        break;
+                      case 'delete':
+                        onDelete();
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, size: 18),
+                          SizedBox(width: 8),
+                          Text('Edit'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'toggle',
+                      child: Row(
+                        children: [
+                          Icon(
+                            completed ? Icons.undo : Icons.check_circle_outline,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(completed ? 'Mark incomplete' : 'Mark complete'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'important',
+                      child: Row(
+                        children: [
+                          Icon(
+                            task.isImportant ? Icons.star_border : Icons.star,
+                            size: 18,
+                            color: Colors.amber,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            task.isImportant ? 'Remove star' : 'Mark important',
+                          ),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'duplicate',
+                      child: Row(
+                        children: [
+                          Icon(Icons.copy_outlined, size: 18),
+                          SizedBox(width: 8),
+                          Text('Duplicate'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            size: 18,
+                            color: Colors.red,
+                          ),
+                          SizedBox(width: 8),
+                          Text('Delete', style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
